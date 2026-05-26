@@ -51,7 +51,7 @@ export default function CustomersPage() {
           <p className="text-muted-foreground mt-2">Manage your client list.</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button>Add Customer</Button>
           </DialogTrigger>
           <DialogContent>

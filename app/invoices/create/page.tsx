@@ -10,13 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { numberToWords } from "@/utils/numberToWords";
 import { generateInvoicePdf, downloadPdf } from "@/utils/generatePdf";
+// Load invoice template (JSON) from template.txt
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const invoiceTemplate = require("@/utils/template.json");
 
 export default function CreateInvoicePage() {
   const router = useRouter();
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [company, setCompany] = useState(null);
-  
+
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [items, setItems] = useState([{ productId: "", qty: 1, rate: 0, amount: 0, cgst: 0, sgst: 0, name: "", unit: "", hsnCode: "" }]);
 
@@ -30,7 +33,7 @@ export default function CreateInvoicePage() {
       const custData = await custRes.json();
       const prodData = await prodRes.json();
       const compData = await compRes.json();
-      
+
       setCustomers(custData.customers || []);
       setProducts(prodData.products || []);
       setCompany(compData.company || {});
@@ -85,7 +88,7 @@ export default function CreateInvoicePage() {
   // (Assuming single product mostly, as per "Even if crusher mostly uses one item" rule)
   const cgstPercent = items[0]?.cgst || 0;
   const sgstPercent = items[0]?.sgst || 0;
-  
+
   const cgstAmount = Number((subtotal * (cgstPercent / 100)).toFixed(2));
   const sgstAmount = Number((subtotal * (sgstPercent / 100)).toFixed(2));
   const totalBeforeRound = subtotal + cgstAmount + sgstAmount;
@@ -138,7 +141,7 @@ export default function CreateInvoicePage() {
         amountWords
       };
 
-      const pdfBytes = await generateInvoicePdf(invoiceDataForPdf, company);
+      const pdfBytes = await generateInvoicePdf(invoiceTemplate, { invoiceData: invoiceDataForPdf, companyData: company });
       downloadPdf(pdfBytes, `${data.invoice.invoiceNumber.replace(/\//g, "_")}.pdf`);
       router.push("/invoices");
     } else {
@@ -160,7 +163,7 @@ export default function CreateInvoicePage() {
           <CardContent>
             <div className="space-y-2 max-w-sm">
               <Label>Select Customer</Label>
-              <Select onValueChange={setSelectedCustomer}>
+              <Select onValueChange={(value: any) => setSelectedCustomer(value || "")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a customer" />
                 </SelectTrigger>
@@ -183,7 +186,7 @@ export default function CreateInvoicePage() {
               <div key={index} className="flex gap-4 items-end mb-4">
                 <div className="flex-1 space-y-2">
                   <Label>Product</Label>
-                  <Select onValueChange={(val) => handleProductChange(index, val)}>
+                  <Select onValueChange={(val: any) => handleProductChange(index, val)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>

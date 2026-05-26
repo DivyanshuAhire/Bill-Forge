@@ -54,7 +54,7 @@ export default function AdminPage() {
           <p className="text-muted-foreground mt-2">Manage companies on BillForge.</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button>Create Company</Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">

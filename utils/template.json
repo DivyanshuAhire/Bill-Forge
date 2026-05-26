@@ -1,0 +1,319 @@
+{
+  "page": {
+    "size": "A4",
+    "width": 595,
+    "height": 842,
+    "margin": {
+      "top": 40,
+      "left": 40,
+      "right": 40,
+      "bottom": 40
+    }
+  },
+  "container": {
+    "x": 40,
+    "y": 40,
+    "width": 515,
+    "height": 760,
+    "border": true
+  },
+  "styles": {
+    "title": {
+      "fontSize": 14,
+      "bold": true
+    },
+    "header": {
+      "fontSize": 10,
+      "bold": true
+    },
+    "normal": {
+      "fontSize": 9
+    },
+    "small": {
+      "fontSize": 8
+    }
+  },
+  "sellerBlock": {
+    "x": 50,
+    "y": 50,
+    "width": 250,
+    "height": 120,
+    "rows": [
+      {
+        "label": "Company",
+        "field": "seller.company"
+      },
+      {
+        "label": "Address",
+        "field": "seller.address1"
+      },
+      {
+        "label": "",
+        "field": "seller.address2"
+      },
+      {
+        "label": "",
+        "field": "seller.address3"
+      },
+      {
+        "label": "GSTIN/UIN",
+        "field": "seller.gstin"
+      },
+      {
+        "label": "State",
+        "field": "seller.state"
+      },
+      {
+        "label": "Email",
+        "field": "seller.email"
+      }
+    ]
+  },
+  "consigneeBlock": {
+    "x": 50,
+    "y": 175,
+    "width": 250,
+    "height": 95,
+    "rows": [
+      {
+        "label": "Consignee",
+        "field": "buyer.name"
+      },
+      {
+        "label": "Address",
+        "field": "buyer.address"
+      },
+      {
+        "label": "GSTIN/UIN",
+        "field": "buyer.gstin"
+      },
+      {
+        "label": "State",
+        "field": "buyer.state"
+      }
+    ]
+  },
+  "buyerBlock": {
+    "x": 50,
+    "y": 270,
+    "width": 250,
+    "height": 95,
+    "rows": [
+      {
+        "label": "Buyer",
+        "field": "billTo.name"
+      },
+      {
+        "label": "Address",
+        "field": "billTo.address"
+      },
+      {
+        "label": "GSTIN/UIN",
+        "field": "billTo.gstin"
+      },
+      {
+        "label": "State",
+        "field": "billTo.state"
+      }
+    ]
+  },
+  "invoiceMetaBoxes": [
+    {
+      "title": "Invoice No.",
+      "field": "invoiceNo",
+      "x": 300,
+      "y": 50,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Dated",
+      "field": "date",
+      "x": 420,
+      "y": 50,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Delivery Note",
+      "field": "deliveryNote",
+      "x": 300,
+      "y": 85,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Mode / Terms of Payment",
+      "field": "paymentTerms",
+      "x": 420,
+      "y": 85,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Reference No. & Date",
+      "field": "referenceNo",
+      "x": 300,
+      "y": 120,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Other References",
+      "field": "otherReferences",
+      "x": 420,
+      "y": 120,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Buyer's Order No.",
+      "field": "buyerOrderNo",
+      "x": 300,
+      "y": 155,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Dated",
+      "field": "buyerDate",
+      "x": 420,
+      "y": 155,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Dispatch Doc No.",
+      "field": "dispatchDocNo",
+      "x": 300,
+      "y": 190,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Delivery Note Date",
+      "field": "deliveryDate",
+      "x": 420,
+      "y": 190,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Dispatched Through",
+      "field": "dispatchThrough",
+      "x": 300,
+      "y": 225,
+      "width": 120,
+      "height": 35
+    },
+    {
+      "title": "Destination",
+      "field": "destination",
+      "x": 420,
+      "y": 225,
+      "width": 95,
+      "height": 35
+    },
+    {
+      "title": "Terms Of Delivery",
+      "field": "deliveryTerms",
+      "x": 300,
+      "y": 260,
+      "width": 215,
+      "height": 45
+    }
+  ],
+  "itemsTable": {
+    "x": 50,
+    "y": 380,
+    "width": 465,
+    "columns": [
+      {
+        "title": "Description of Goods",
+        "field": "description",
+        "width": 180
+      },
+      {
+        "title": "HSN/SAC",
+        "field": "hsn",
+        "width": 80
+      },
+      {
+        "title": "Quantity",
+        "field": "quantity",
+        "width": 70
+      },
+      {
+        "title": "Rate",
+        "field": "rate",
+        "width": 60
+      },
+      {
+        "title": "Amount",
+        "field": "amount",
+        "width": 75
+      }
+    ]
+  },
+  "taxSection": {
+    "x": 50,
+    "y": 580,
+    "width": 465,
+    "rows": [
+      {
+        "label": "CGST",
+        "field": "cgst"
+      },
+      {
+        "label": "SGST",
+        "field": "sgst"
+      },
+      {
+        "label": "Round Off",
+        "field": "roundOff"
+      },
+      {
+        "label": "Grand Total",
+        "field": "grandTotal"
+      }
+    ]
+  },
+  "amountWords": {
+    "x": 50,
+    "y": 660,
+    "width": 465,
+    "field": "amountInWords"
+  },
+  "bankDetails": {
+    "x": 50,
+    "y": 700,
+    "rows": [
+      {
+        "label": "Bank Name",
+        "field": "bank.name"
+      },
+      {
+        "label": "A/C No",
+        "field": "bank.account"
+      },
+      {
+        "label": "IFSC",
+        "field": "bank.ifsc"
+      },
+      {
+        "label": "Branch",
+        "field": "bank.branch"
+      }
+    ]
+  },
+  "signature": {
+    "x": 420,
+    "y": 720,
+    "text": "Authorised Signatory"
+  },
+  "footer": {
+    "x": 50,
+    "y": 785,
+    "text": "This is a Computer Generated Invoice"
+  }
+}

@@ -52,7 +52,7 @@ export default function ProductsPage() {
           <p className="text-muted-foreground mt-2">Manage your inventory and rates.</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button>Add Product</Button>
           </DialogTrigger>
           <DialogContent>
