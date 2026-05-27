@@ -463,7 +463,7 @@
                 },
                 {
                   "label": "Branch & IFS Code :",
-                  "value_template": "{branch} & {ifsc_code}",
+                  "value_template": "{invoice.bank_details.branch} & {invoice.bank_details.ifsc_code}",
                   "style": "bold"
                 }
               ]

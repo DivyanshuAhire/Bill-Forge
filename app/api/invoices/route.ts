@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Invoice from "@/models/Invoice";
 import InvoiceItem from "@/models/InvoiceItem";
+import Company from "@/models/Company";
 import { getSession } from "@/lib/session";
 
 export async function GET(req: Request) {
@@ -27,11 +28,11 @@ export async function POST(req: Request) {
     await connectDB();
     const body = await req.json();
     
-    // Auto increment invoice number logic could be complex. Here we just take it from frontend or simple count
-    // A production app might use a separate sequence collection.
+    // Auto increment invoice number logic
+    const company = await Company.findById(session.companyId);
+    const prefix = company?.invoicePrefix || "INV";
     const count = await Invoice.countDocuments({ companyId: session.companyId });
-    // This expects prefix from frontend or fetches it here
-    const invoiceNumber = body.invoiceNumber || `INV/${new Date().getFullYear()}/${count + 1}`;
+    const invoiceNumber = body.invoiceNumber || `${prefix}/${new Date().getFullYear()}/${count + 1}`;
 
     const newInvoice = new Invoice({
       companyId: session.companyId,

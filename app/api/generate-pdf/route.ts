@@ -101,7 +101,11 @@ export async function POST(req: NextRequest) {
           branch: companyData?.branch || "",
           ifsc_code: companyData?.ifsc || companyData?.ifsc_code || "",
         },
-        footer: template.invoice.footer
+        footer: {
+          ...(template.invoice.footer || {}),
+          declaration: companyData?.declaration || "",
+          signatory_label: `For ${company.company_name}`
+        }
       },
       layout: {
         ...template.layout,

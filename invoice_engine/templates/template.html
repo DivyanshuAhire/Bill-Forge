@@ -168,14 +168,27 @@
             {% endif %}
             
             {% for row in section.left.rows %}
-               <div style="display: flex; margin-bottom: 2px;">
-                 {% for col in row.cols %}
-                    <div style="flex: {{ col.colspan | default(1) }}; border: 1pt solid {{ layout.colors.border | default('#000') }}; padding: 2px;">
-                       {% if col.label %}<div class="bold_small">{{ col.label }}</div>{% endif %}
-                       <div class="{{ col.style | default('normal') }}">{{ col.resolved_value }}</div>
-                    </div>
-                 {% endfor %}
-               </div>
+               {% if row.cols %}
+                 <div style="display: flex; margin-bottom: 2px;">
+                   {% for col in row.cols %}
+                      <div style="flex: {{ col.colspan | default(1) }}; border: 1pt solid {{ layout.colors.border | default('#000') }}; padding: 2px;">
+                         {% if col.label %}<div class="bold_small">{{ col.label }}</div>{% endif %}
+                         <div class="{{ col.style | default('normal') }}">{{ col.resolved_value }}</div>
+                      </div>
+                   {% endfor %}
+                 </div>
+               {% else %}
+                 <div style="margin-bottom: 6px; text-align: {{ row.align | default('left') }};">
+                   {% if row.label %}<div class="{{ row.label_style | default('bold') }}" style="margin-bottom: 2px;">{{ row.label }}</div>{% endif %}
+                   {% if row.resolved_value %}<div class="{{ row.value_style | default('normal') }}">{{ row.resolved_value }}</div>{% endif %}
+                   {% for field in row.fields %}
+                     <div class="{{ field.style | default('normal') }}">
+                       {% if field.label %}<span>{{ field.label }} </span>{% endif %}
+                       <span>{{ field.resolved_value }}</span>
+                     </div>
+                   {% endfor %}
+                 </div>
+               {% endif %}
             {% endfor %}
           </div>
           <div class="panel panel-right" style="width: {{ section.right.width_percent }}%">
@@ -191,14 +204,27 @@
             {% endfor %}
             
             {% for row in section.right.rows %}
-               <div style="display: flex; margin-bottom: 2px;">
-                 {% for col in row.cols %}
-                    <div style="flex: {{ col.colspan | default(1) }}; border: 1pt solid {{ layout.colors.border | default('#000') }}; padding: 2px; margin-right: 2px;">
-                       {% if col.label %}<div class="bold_small">{{ col.label }}</div>{% endif %}
-                       <div class="{{ col.style | default('bold') }}">{{ col.resolved_value }}</div>
-                    </div>
-                 {% endfor %}
-               </div>
+               {% if row.cols %}
+                 <div style="display: flex; margin-bottom: 2px;">
+                   {% for col in row.cols %}
+                      <div style="flex: {{ col.colspan | default(1) }}; border: 1pt solid {{ layout.colors.border | default('#000') }}; padding: 2px; margin-right: 2px;">
+                         {% if col.label %}<div class="bold_small">{{ col.label }}</div>{% endif %}
+                         <div class="{{ col.style | default('bold') }}">{{ col.resolved_value }}</div>
+                      </div>
+                   {% endfor %}
+                 </div>
+               {% else %}
+                 <div style="margin-bottom: 6px; text-align: {{ row.align | default('left') }};">
+                   {% if row.label %}<div class="{{ row.label_style | default('bold') }}" style="margin-bottom: 2px;">{{ row.label }}</div>{% endif %}
+                   {% if row.resolved_value %}<div class="{{ row.value_style | default('normal') }}">{{ row.resolved_value }}</div>{% endif %}
+                   {% for field in row.fields %}
+                     <div class="{{ field.style | default('normal') }}">
+                       {% if field.label %}<span>{{ field.label }} </span>{% endif %}
+                       <span>{{ field.resolved_value }}</span>
+                     </div>
+                   {% endfor %}
+                 </div>
+               {% endif %}
             {% endfor %}
           </div>
         </div>

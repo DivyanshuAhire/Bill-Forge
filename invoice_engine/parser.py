@@ -120,6 +120,9 @@ def parse_and_resolve(filepath: str) -> dict:
                     for field in section[panel].get('fields', []):
                         process_field(data, field)
                     for row in section[panel].get('rows', []):
+                        process_field(data, row)
+                        for field in row.get('fields', []):
+                            process_field(data, field)
                         for col in row.get('cols', []):
                             process_field(data, col)
                             
