@@ -16,7 +16,6 @@
       "destination": "",
       "terms_of_delivery": ""
     },
-
     "seller": {
       "company_name": "SSN INNOVATIVE INFRA LLP",
       "logo_url": "path/to/logo.png",
@@ -31,7 +30,6 @@
       "state_code": "27",
       "email": "ssnmoshiplant@gmail.com"
     },
-
     "consignee": {
       "label": "Consignee (Ship to)",
       "company_name": "V. M Matere Infrastructure (I) Pvt Ltd",
@@ -39,7 +37,6 @@
       "state_name": "Maharashtra",
       "state_code": "27"
     },
-
     "buyer": {
       "label": "Buyer (Bill to)",
       "company_name": "V. M Matere Infrastructure (I) Pvt Ltd",
@@ -47,7 +44,6 @@
       "state_name": "Maharashtra",
       "state_code": "27"
     },
-
     "line_items": [
       {
         "sl_no": 1,
@@ -60,7 +56,6 @@
         "amount": 72051.00
       }
     ],
-
     "taxes": [
       {
         "label": "CGST",
@@ -73,7 +68,6 @@
         "amount": 1801.28
       }
     ],
-
     "totals": {
       "subtotal": 72051.00,
       "total_tax": 3602.56,
@@ -83,14 +77,12 @@
       "total_quantity_unit": "Brass",
       "amount_in_words": "INR Seventy Five Thousand Six Hundred Fifty Four Only"
     },
-
     "bank_details": {
       "bank_name": "THE COSMOS CO-OPERATIVE BANK LTD",
       "account_no": "101100103797",
       "branch": "BANER, PUNE",
       "ifsc_code": "COSB0000101"
     },
-
     "footer": {
       "declaration": "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.",
       "eo_and_e": "E. & O.E",
@@ -100,7 +92,6 @@
       "computer_generated_note": "This is a Computer Generated Invoice"
     }
   },
-
   "layout": {
     "page": {
       "size": "A4",
@@ -110,7 +101,6 @@
       "margin_left_mm": 10,
       "margin_right_mm": 10
     },
-
     "fonts": {
       "primary_family": "Arial, sans-serif",
       "header_size_pt": 13,
@@ -119,7 +109,6 @@
       "label_weight": "bold",
       "value_weight": "normal"
     },
-
     "colors": {
       "border": "#000000",
       "header_bg": "#ffffff",
@@ -127,7 +116,6 @@
       "text_primary": "#000000",
       "text_secondary": "#333333"
     },
-
     "sections": [
       {
         "id": "header_bar",
@@ -141,7 +129,6 @@
           "padding_bottom_mm": 2
         }
       },
-
       {
         "id": "top_info_row",
         "type": "two_column_split",
@@ -152,11 +139,31 @@
           "includes_logo": true,
           "logo_position": "left_of_text",
           "fields": [
-            { "key": "seller.company_name", "style": "bold_large" },
-            { "key": "seller.address_lines", "style": "normal", "multiline": true },
-            { "key": "seller.gstin_uin", "label": "GSTIN/UIN:", "style": "normal" },
-            { "key": "seller.state_name", "label": "State Name :", "append": "Code : {seller.state_code}", "style": "normal" },
-            { "key": "seller.email", "label": "E-Mail :", "style": "normal" }
+            {
+              "key": "seller.company_name",
+              "style": "bold_large"
+            },
+            {
+              "key": "seller.address_lines",
+              "style": "normal",
+              "multiline": true
+            },
+            {
+              "key": "seller.gstin_uin",
+              "label": "GSTIN/UIN:",
+              "style": "normal"
+            },
+            {
+              "key": "seller.state_name",
+              "label": "State Name :",
+              "append": "Code : {seller.state_code}",
+              "style": "normal"
+            },
+            {
+              "key": "seller.email",
+              "label": "E-Mail :",
+              "style": "normal"
+            }
           ]
         },
         "right": {
@@ -165,49 +172,91 @@
           "rows": [
             {
               "cols": [
-                { "label": "Invoice No.", "value_key": "invoice.meta.invoice_no", "style": "bold" },
-                { "label": "Dated", "value_key": "invoice.meta.dated", "style": "bold" }
+                {
+                  "label": "Invoice No.",
+                  "value_key": "invoice.meta.invoice_no",
+                  "style": "bold"
+                },
+                {
+                  "label": "Dated",
+                  "value_key": "invoice.meta.dated",
+                  "style": "bold"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Delivery Note", "value_key": "invoice.meta.delivery_note" },
-                { "label": "Mode/Terms of Payment", "value_key": "invoice.meta.mode_terms_of_payment" }
+                {
+                  "label": "Delivery Note",
+                  "value_key": "invoice.meta.delivery_note"
+                },
+                {
+                  "label": "Mode/Terms of Payment",
+                  "value_key": "invoice.meta.mode_terms_of_payment"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Reference No. & Date.", "value_key": "invoice.meta.reference_no_and_date", "colspan": 1 },
-                { "label": "Other References", "value_key": "invoice.meta.other_references" }
+                {
+                  "label": "Reference No. & Date.",
+                  "value_key": "invoice.meta.reference_no_and_date",
+                  "colspan": 1
+                },
+                {
+                  "label": "Other References",
+                  "value_key": "invoice.meta.other_references"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Buyer's Order No.", "value_key": "invoice.meta.buyers_order_no" },
-                { "label": "Dated", "value_key": "invoice.meta.buyers_order_dated" }
+                {
+                  "label": "Buyer's Order No.",
+                  "value_key": "invoice.meta.buyers_order_no"
+                },
+                {
+                  "label": "Dated",
+                  "value_key": "invoice.meta.buyers_order_dated"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Dispatch Doc No.", "value_key": "invoice.meta.dispatch_doc_no" },
-                { "label": "Delivery Note Date", "value_key": "invoice.meta.delivery_note_date" }
+                {
+                  "label": "Dispatch Doc No.",
+                  "value_key": "invoice.meta.dispatch_doc_no"
+                },
+                {
+                  "label": "Delivery Note Date",
+                  "value_key": "invoice.meta.delivery_note_date"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Dispatched through", "value_key": "invoice.meta.dispatched_through" },
-                { "label": "Destination", "value_key": "invoice.meta.destination" }
+                {
+                  "label": "Dispatched through",
+                  "value_key": "invoice.meta.dispatched_through"
+                },
+                {
+                  "label": "Destination",
+                  "value_key": "invoice.meta.destination"
+                }
               ]
             },
             {
               "cols": [
-                { "label": "Terms of Delivery", "value_key": "invoice.meta.terms_of_delivery", "colspan": 2 }
+                {
+                  "label": "Terms of Delivery",
+                  "value_key": "invoice.meta.terms_of_delivery",
+                  "colspan": 2
+                }
               ]
             }
           ]
         }
       },
-
       {
         "id": "consignee_buyer_row",
         "type": "two_column_split",
@@ -217,9 +266,20 @@
           "content": "consignee_block",
           "label": "Consignee (Ship to)",
           "fields": [
-            { "key": "consignee.company_name", "style": "bold" },
-            { "key": "consignee.gstin_uin", "label": "GSTIN/UIN :", "style": "normal" },
-            { "key": "consignee.state_name", "label": "State Name :", "append": "Code : {consignee.state_code}" }
+            {
+              "key": "consignee.company_name",
+              "style": "bold"
+            },
+            {
+              "key": "consignee.gstin_uin",
+              "label": "GSTIN/UIN :",
+              "style": "normal"
+            },
+            {
+              "key": "consignee.state_name",
+              "label": "State Name :",
+              "append": "Code : {consignee.state_code}"
+            }
           ]
         },
         "right": {
@@ -227,13 +287,23 @@
           "content": "buyer_block",
           "label": "Buyer (Bill to)",
           "fields": [
-            { "key": "buyer.company_name", "style": "bold" },
-            { "key": "buyer.gstin_uin", "label": "GSTIN/UIN :", "style": "normal" },
-            { "key": "buyer.state_name", "label": "State Name :", "append": "Code : {buyer.state_code}" }
+            {
+              "key": "buyer.company_name",
+              "style": "bold"
+            },
+            {
+              "key": "buyer.gstin_uin",
+              "label": "GSTIN/UIN :",
+              "style": "normal"
+            },
+            {
+              "key": "buyer.state_name",
+              "label": "State Name :",
+              "append": "Code : {buyer.state_code}"
+            }
           ]
         }
       },
-
       {
         "id": "line_items_table",
         "type": "table",
@@ -241,12 +311,42 @@
         "header_row": {
           "bg_color": "#f0f0f0",
           "columns": [
-            { "id": "description", "label": "Description of Goods", "width_percent": 35, "align": "left" },
-            { "id": "hsn_sac",     "label": "HSN/SAC",              "width_percent": 12, "align": "center" },
-            { "id": "quantity",    "label": "Quantity",              "width_percent": 13, "align": "center" },
-            { "id": "rate",        "label": "Rate",                  "width_percent": 12, "align": "right" },
-            { "id": "per",         "label": "per",                   "width_percent": 8,  "align": "center" },
-            { "id": "amount",      "label": "Amount",                "width_percent": 20, "align": "right" }
+            {
+              "id": "description",
+              "label": "Description of Goods",
+              "width_percent": 35,
+              "align": "left"
+            },
+            {
+              "id": "hsn_sac",
+              "label": "HSN/SAC",
+              "width_percent": 12,
+              "align": "center"
+            },
+            {
+              "id": "quantity",
+              "label": "Quantity",
+              "width_percent": 13,
+              "align": "center"
+            },
+            {
+              "id": "rate",
+              "label": "Rate",
+              "width_percent": 12,
+              "align": "right"
+            },
+            {
+              "id": "per",
+              "label": "per",
+              "width_percent": 8,
+              "align": "center"
+            },
+            {
+              "id": "amount",
+              "label": "Amount",
+              "width_percent": 20,
+              "align": "right"
+            }
           ]
         },
         "body_rows": {
@@ -260,27 +360,64 @@
             "type": "tax_row",
             "source": "invoice.taxes",
             "columns": [
-              { "col_id": "description", "value_template": "{label} {rate_percent}%", "align": "right", "style": "italic_bold", "colspan": 4 },
-              { "col_id": "rate",        "value_key": "rate_percent", "suffix": " %", "align": "right", "style": "italic_bold" },
-              { "col_id": "amount",      "value_key": "amount",       "align": "right", "style": "italic_bold", "format": "indian_currency_no_symbol" }
+              {
+                "col_id": "description",
+                "value_template": "{label} {rate_percent}%",
+                "align": "right",
+                "style": "italic_bold",
+                "colspan": 4
+              },
+              {
+                "col_id": "rate",
+                "value_key": "rate_percent",
+                "suffix": " %",
+                "align": "right",
+                "style": "italic_bold"
+              },
+              {
+                "col_id": "amount",
+                "value_key": "amount",
+                "align": "right",
+                "style": "italic_bold",
+                "format": "indian_currency_no_symbol"
+              }
             ]
           },
           {
             "type": "round_off_row",
             "columns": [
-              { "col_id": "description", "value": "Round Off", "align": "right", "style": "italic_bold", "colspan": 5 },
-              { "col_id": "amount",      "value_key": "totals.round_off", "align": "right", "style": "italic_bold" }
+              {
+                "col_id": "description",
+                "value": "Round Off",
+                "align": "right",
+                "style": "italic_bold",
+                "colspan": 5
+              },
+              {
+                "col_id": "amount",
+                "value_key": "totals.round_off",
+                "align": "right",
+                "style": "italic_bold"
+              }
             ]
           }
         ],
         "footer_row": {
           "label": "Total",
           "label_align": "right",
-          "quantity_col": { "col_id": "quantity", "value_key": "totals.total_quantity", "suffix": " {totals.total_quantity_unit}" },
-          "amount_col":   { "col_id": "amount",   "value_key": "totals.grand_total", "format": "indian_currency_with_symbol", "style": "bold" }
+          "quantity_col": {
+            "col_id": "quantity",
+            "value_key": "totals.total_quantity",
+            "suffix": " {totals.total_quantity_unit}"
+          },
+          "amount_col": {
+            "col_id": "amount",
+            "value_key": "totals.grand_total",
+            "format": "indian_currency_with_symbol",
+            "style": "bold"
+          }
         }
       },
-
       {
         "id": "amount_in_words_row",
         "type": "full_width_text",
@@ -292,7 +429,6 @@
         "right_corner_text": "E. & O.E",
         "right_corner_style": "italic"
       },
-
       {
         "id": "bottom_row",
         "type": "two_column_split",
@@ -317,23 +453,40 @@
               "label": "Company's Bank Details",
               "label_style": "bold_small",
               "fields": [
-                { "label": "Bank Name  :", "value_key": "invoice.bank_details.bank_name", "style": "bold" },
-                { "label": "A/c No.       :", "value_key": "invoice.bank_details.account_no", "style": "normal" },
-                { "label": "Branch & IFS Code :", "value_template": "{branch} & {ifsc_code}", "style": "bold" }
+                {
+                  "label": "Bank Name  :",
+                  "value_key": "invoice.bank_details.bank_name",
+                  "style": "bold"
+                },
+                {
+                  "label": "A/c No.       :",
+                  "value_key": "invoice.bank_details.account_no",
+                  "style": "normal"
+                },
+                {
+                  "label": "Branch & IFS Code :",
+                  "value_template": "{branch} & {ifsc_code}",
+                  "style": "bold"
+                }
               ]
             },
             {
               "id": "signatory_block",
               "align": "right",
               "fields": [
-                { "value_key": "invoice.footer.signatory_label", "style": "bold" },
-                { "value_key": "invoice.footer.signatory_title", "style": "normal" }
+                {
+                  "value_key": "invoice.footer.signatory_label",
+                  "style": "bold"
+                },
+                {
+                  "value_key": "invoice.footer.signatory_title",
+                  "style": "normal"
+                }
               ]
             }
           ]
         }
       },
-
       {
         "id": "jurisdiction_note",
         "type": "full_width_centered_text",
@@ -349,7 +502,6 @@
       }
     ]
   },
-
   "formatting_rules": {
     "currency": {
       "locale": "en-IN",
