@@ -362,7 +362,7 @@
             "columns": [
               {
                 "col_id": "description",
-                "value_template": "{label} {rate_percent}%",
+                "value_template": "{label}",
                 "align": "right",
                 "style": "italic_bold",
                 "colspan": 4

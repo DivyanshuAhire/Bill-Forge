@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     companyName: "",
     gstNumber: "",
@@ -20,7 +23,8 @@ export default function SettingsPage() {
     accountNumber: "",
     ifsc: "",
     invoicePrefix: "",
-    declaration: ""
+    declaration: "",
+    logo: ""
   });
 
   useEffect(() => {
@@ -28,6 +32,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/companies/settings");
       const data = await res.json();
       if (data.company) {
+        const logo = data.company.logo || "";
         setFormData({
           companyName: data.company.companyName || "",
           gstNumber: data.company.gstNumber || "",
@@ -39,13 +44,33 @@ export default function SettingsPage() {
           accountNumber: data.company.accountNumber || "",
           ifsc: data.company.ifsc || "",
           invoicePrefix: data.company.invoicePrefix || "",
-          declaration: data.company.declaration || ""
+          declaration: data.company.declaration || "",
+          logo
         });
+        if (logo) setLogoPreview(logo);
       }
       setLoading(false);
     };
     fetchCompany();
   }, []);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target?.result as string;
+      setLogoPreview(base64);
+      setFormData(prev => ({ ...prev, logo: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoPreview("");
+    setFormData(prev => ({ ...prev, logo: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +102,41 @@ export default function SettingsPage() {
               <CardTitle>Company Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Logo Upload */}
+              <div className="space-y-2">
+                <Label>Company Logo (1:1 square)</Label>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-20 h-20 border-2 border-dashed border-muted-foreground/40 rounded-lg flex items-center justify-center cursor-pointer bg-muted/20 overflow-hidden hover:border-primary transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Company Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground text-center px-1">Click to upload</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                      {logoPreview ? "Change Logo" : "Upload Logo"}
+                    </Button>
+                    {logoPreview && (
+                      <Button type="button" variant="ghost" size="sm" className="text-destructive block" onClick={handleRemoveLogo}>
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
+                <p className="text-xs text-muted-foreground">Recommended: square PNG or JPG, max 1MB</p>
+              </div>
+
               <div className="space-y-2">
                 <Label>Company Name</Label>
                 <Input value={formData.companyName} onChange={(e) => setFormData({...formData, companyName: e.target.value})} required />

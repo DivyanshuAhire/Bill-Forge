@@ -58,6 +58,17 @@ export async function POST(req: NextRequest) {
           ...template.invoice.meta,
           invoice_no: invoiceData?.invoiceNumber || "",
           dated: formatDate(invoiceData?.invoiceDate),
+          delivery_note: invoiceData?.deliveryDetails?.deliveryNote || "",
+          mode_terms_of_payment: invoiceData?.deliveryDetails?.modeTermsOfPayment || "",
+          reference_no_and_date: invoiceData?.deliveryDetails?.referenceNoAndDate || "",
+          other_references: invoiceData?.deliveryDetails?.otherReferences || "",
+          buyers_order_no: invoiceData?.deliveryDetails?.buyersOrderNo || "",
+          buyers_order_dated: invoiceData?.deliveryDetails?.buyersOrderDated || "",
+          dispatch_doc_no: invoiceData?.deliveryDetails?.dispatchDocNo || "",
+          delivery_note_date: invoiceData?.deliveryDetails?.deliveryNoteDate || "",
+          dispatched_through: invoiceData?.deliveryDetails?.dispatchedThrough || "",
+          destination: invoiceData?.deliveryDetails?.destination || "",
+          terms_of_delivery: invoiceData?.deliveryDetails?.termsOfDelivery || ""
         },
         seller: company,
         buyer: customer,
@@ -92,7 +103,10 @@ export async function POST(req: NextRequest) {
         },
         footer: template.invoice.footer
       },
-      layout: template.layout,
+      layout: {
+        ...template.layout,
+        seller_logo: companyData?.logo || ""
+      },
       formatting_rules: template.formatting_rules
     };
 

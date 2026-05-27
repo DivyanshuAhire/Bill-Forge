@@ -148,6 +148,12 @@
             {% if section.left.label %}
               <div class="bold" style="margin-bottom: 4px;">{{ section.left.label }}</div>
             {% endif %}
+
+            {% if section.left.includes_logo and layout.seller_logo %}
+              <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px;">
+                <img src="{{ layout.seller_logo }}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain;" />
+                <div>
+            {% endif %}
             
             {% for field in section.left.fields %}
               <div class="{{ field.style | default('normal') }}">
@@ -155,6 +161,11 @@
                 <span>{{ field.resolved_value }}</span>
               </div>
             {% endfor %}
+
+            {% if section.left.includes_logo and layout.seller_logo %}
+                </div>
+              </div>
+            {% endif %}
             
             {% for row in section.left.rows %}
                <div style="display: flex; margin-bottom: 2px;">

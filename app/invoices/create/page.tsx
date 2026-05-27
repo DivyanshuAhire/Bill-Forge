@@ -14,11 +14,27 @@ import { generateInvoicePdf, downloadPdf } from "@/utils/generatePdf";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const invoiceTemplate = require("@/utils/template.json");
 
+const EMPTY_DELIVERY = {
+  deliveryNote: "",
+  modeTermsOfPayment: "",
+  referenceNoAndDate: "",
+  otherReferences: "",
+  buyersOrderNo: "",
+  buyersOrderDated: "",
+  dispatchDocNo: "",
+  deliveryNoteDate: "",
+  dispatchedThrough: "",
+  destination: "",
+  termsOfDelivery: ""
+};
+
 export default function CreateInvoicePage() {
   const router = useRouter();
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [company, setCompany] = useState(null);
+  const [showDelivery, setShowDelivery] = useState(false);
+  const [deliveryDetails, setDeliveryDetails] = useState(EMPTY_DELIVERY);
 
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [items, setItems] = useState([{ productId: "", qty: 1, rate: 0, amount: 0, cgst: 0, sgst: 0, name: "", unit: "", hsnCode: "" }]);
@@ -84,8 +100,6 @@ export default function CreateInvoicePage() {
 
   // Calculations
   const subtotal = items.reduce((acc, item) => acc + item.amount, 0);
-  // Simplification for V1: calculating GST on overall subtotal based on the first item's GST % 
-  // (Assuming single product mostly, as per "Even if crusher mostly uses one item" rule)
   const cgstPercent = items[0]?.cgst || 0;
   const sgstPercent = items[0]?.sgst || 0;
 
@@ -140,7 +154,8 @@ export default function CreateInvoicePage() {
         sgstAmount,
         roundoff,
         grandTotal,
-        amountWords
+        amountWords,
+        deliveryDetails: showDelivery ? deliveryDetails : null
       };
 
       const pdfBytes = await generateInvoicePdf(invoiceTemplate, { invoiceData: invoiceDataForPdf, companyData: company });
@@ -150,6 +165,9 @@ export default function CreateInvoicePage() {
       alert("Failed to create invoice: " + data.error);
     }
   };
+
+  const setDelivery = (key: string, value: string) =>
+    setDeliveryDetails(prev => ({ ...prev, [key]: value }));
 
   return (
     <AppLayout>
@@ -216,6 +234,73 @@ export default function CreateInvoicePage() {
             ))}
             <Button variant="outline" onClick={addItem}>+ Add Item</Button>
           </CardContent>
+        </Card>
+
+        {/* Optional Delivery Details */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Additional Details</CardTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDelivery(v => !v)}
+              >
+                {showDelivery ? "▲ Hide" : "▼ Show (Optional)"}
+              </Button>
+            </div>
+          </CardHeader>
+          {showDelivery && (
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Delivery Note</Label>
+                  <Input placeholder="Delivery Note" value={deliveryDetails.deliveryNote} onChange={e => setDelivery("deliveryNote", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mode / Terms of Payment</Label>
+                  <Input placeholder="Mode/Terms of Payment" value={deliveryDetails.modeTermsOfPayment} onChange={e => setDelivery("modeTermsOfPayment", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Reference No. & Date</Label>
+                  <Input placeholder="Reference No. & Date" value={deliveryDetails.referenceNoAndDate} onChange={e => setDelivery("referenceNoAndDate", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Other References</Label>
+                  <Input placeholder="Other References" value={deliveryDetails.otherReferences} onChange={e => setDelivery("otherReferences", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Buyer&apos;s Order No.</Label>
+                  <Input placeholder="Buyer's Order No." value={deliveryDetails.buyersOrderNo} onChange={e => setDelivery("buyersOrderNo", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Buyer&apos;s Order Dated</Label>
+                  <Input placeholder="Dated" value={deliveryDetails.buyersOrderDated} onChange={e => setDelivery("buyersOrderDated", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Dispatch Doc No.</Label>
+                  <Input placeholder="Dispatch Doc No." value={deliveryDetails.dispatchDocNo} onChange={e => setDelivery("dispatchDocNo", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Delivery Note Date</Label>
+                  <Input placeholder="Delivery Note Date" value={deliveryDetails.deliveryNoteDate} onChange={e => setDelivery("deliveryNoteDate", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Dispatched Through</Label>
+                  <Input placeholder="Dispatched Through" value={deliveryDetails.dispatchedThrough} onChange={e => setDelivery("dispatchedThrough", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Destination</Label>
+                  <Input placeholder="Destination" value={deliveryDetails.destination} onChange={e => setDelivery("destination", e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label>Terms of Delivery</Label>
+                  <Input placeholder="Terms of Delivery" value={deliveryDetails.termsOfDelivery} onChange={e => setDelivery("termsOfDelivery", e.target.value)} />
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         <Card>
