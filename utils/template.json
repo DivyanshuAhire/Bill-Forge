@@ -478,7 +478,7 @@
                 },
                 {
                   "value_key": "invoice.footer.signatory_title",
-                  "style": "normal"
+                  "style": "normal mt-40"
                 }
               ]
             }
