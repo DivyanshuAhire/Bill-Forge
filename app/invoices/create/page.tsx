@@ -131,7 +131,9 @@ export default function CreateInvoicePage() {
           qty: i.qty,
           unit: i.unit,
           rate: i.rate,
-          amount: i.amount
+          amount: i.amount,
+          cgstPercent: i.cgst,
+          sgstPercent: i.sgst
         })),
         subtotal,
         cgstAmount,

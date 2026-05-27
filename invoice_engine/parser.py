@@ -176,14 +176,15 @@ def parse_and_resolve(filepath: str) -> dict:
                     
             section['resolved_body_rows'] = resolved_body_rows
             
-            summary_row = section.get('summary_row')
-            if summary_row:
-                if 'quantity_col' in summary_row:
-                    process_table_col(data, summary_row['quantity_col'], {})
-                if 'amount_col' in summary_row:
-                    process_table_col(data, summary_row['amount_col'], {})
+            footer_row = section.get('footer_row')
+            if footer_row:
+                if 'quantity_col' in footer_row:
+                    process_table_col(data, footer_row['quantity_col'], {})
+                if 'amount_col' in footer_row:
+                    process_table_col(data, footer_row['amount_col'], {})
                     
         elif section.get('type') in ['full_width_text', 'full_width_centered_text']:
             process_field(data, section)
 
     return context
+

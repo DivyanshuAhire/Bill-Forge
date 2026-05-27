@@ -51,28 +51,28 @@
         "hsn_sac": "38251000",
         "quantity": 34.31,
         "unit": "Brass",
-        "rate": 2100.00,
+        "rate": 2100.0,
         "rate_unit": "Brass",
-        "amount": 72051.00
+        "amount": 72051.0
       }
     ],
     "taxes": [
       {
         "label": "CGST",
-        "rate_percent": 2.50,
+        "rate_percent": 2.5,
         "amount": 1801.28
       },
       {
         "label": "SGST",
-        "rate_percent": 2.50,
+        "rate_percent": 2.5,
         "amount": 1801.28
       }
     ],
     "totals": {
-      "subtotal": 72051.00,
+      "subtotal": 72051.0,
       "total_tax": 3602.56,
       "round_off": 0.44,
-      "grand_total": 75654.00,
+      "grand_total": 75654.0,
       "total_quantity": 34.31,
       "total_quantity_unit": "Brass",
       "amount_in_words": "INR Seventy Five Thousand Six Hundred Fifty Four Only"
@@ -425,9 +425,7 @@
         "label": "Amount Chargeable (in words)",
         "label_style": "normal",
         "value_key": "invoice.totals.amount_in_words",
-        "value_style": "bold",
-        "right_corner_text": "E. & O.E",
-        "right_corner_style": "italic"
+        "value_style": "bold"
       },
       {
         "id": "bottom_row",

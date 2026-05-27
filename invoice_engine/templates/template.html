@@ -83,6 +83,29 @@
     .empty-row td {
       height: 7mm;
     }
+
+    .amount-words-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 5px;
+      overflow: hidden;
+    }
+    .amount-words-label {
+      font-weight: bold;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+    .amount-words-value {
+      font-weight: bold;
+      flex: 1;
+      text-align: right;
+      margin-right: 8px;
+    }
+    .amount-words-eoe {
+      font-style: italic;
+      white-space: nowrap;
+    }
     
     .bold { font-weight: bold; }
     .bold_large { font-weight: bold; font-size: 14pt; }
@@ -101,13 +124,23 @@
         </div>
         
       {% elif section.type == 'full_width_text' %}
-        <div class="section" style="padding:5px;">
-          {% if section.label %}<span class="{{ section.label_style | default('bold') }}">{{ section.label }} </span>{% endif %}
-          <span class="{{ section.style | default('') }}">{{ section.resolved_value }}</span>
-          {% if section.right_corner_text %}
-          <span class="{{ section.right_corner_style | default('') }}" style="float: right;">{{ section.right_corner_text }}</span>
-          {% endif %}
-        </div>
+        {% if section.id == 'amount_in_words_row' %}
+          <div class="section amount-words-row">
+            <span class="amount-words-label">{{ section.label }} INR</span>
+            <span class="amount-words-value">{{ section.resolved_value }}</span>
+            {% if section.right_corner_text %}
+            <span class="amount-words-eoe">{{ section.right_corner_text }}</span>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="section" style="padding:5px;">
+            {% if section.label %}<span class="{{ section.label_style | default('bold') }}">{{ section.label }} </span>{% endif %}
+            <span class="{{ section.style | default('') }}">{{ section.resolved_value }}</span>
+            {% if section.right_corner_text %}
+            <span class="{{ section.right_corner_style | default('') }}" style="float: right;">{{ section.right_corner_text }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
 
       {% elif section.type == 'two_column_split' %}
         <div class="section two-col" {% if section.border == false %}style="border:none;"{% endif %}>
@@ -203,15 +236,15 @@
               {% endfor %}
               
               <!-- Total row -->
-              {% if section.summary_row %}
+              {% if section.footer_row %}
               <tr class="total-row">
                  {% for header_col in section.header_row.columns %}
-                    {% if header_col.id == section.summary_row.quantity_col.col_id %}
-                       <td style="text-align: center;">{{ section.summary_row.quantity_col.resolved_value }}</td>
-                    {% elif header_col.id == section.summary_row.amount_col.col_id %}
-                       <td style="text-align: right;">{{ section.summary_row.amount_col.resolved_value }}</td>
+                    {% if header_col.id == section.footer_row.quantity_col.col_id %}
+                       <td style="text-align: center;">{{ section.footer_row.quantity_col.resolved_value }}</td>
+                    {% elif header_col.id == section.footer_row.amount_col.col_id %}
+                       <td style="text-align: right;">{{ section.footer_row.amount_col.resolved_value }}</td>
                     {% elif loop.index0 == 0 %}
-                       <td style="text-align: {{ section.summary_row.label_align | default('right') }};">{{ section.summary_row.label }}</td>
+                       <td style="text-align: {{ section.footer_row.label_align | default('right') }};">{{ section.footer_row.label }}</td>
                     {% else %}
                        <td></td>
                     {% endif %}
