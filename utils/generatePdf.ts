@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, PDFPage } from "pdf-lib";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -21,14 +21,25 @@ const formatINR = (amount: number): string => {
   return (amount < 0 ? "-" : "") + result + "." + decPart;
 };
 
+interface DrawContext {
+  page: PDFPage;
+  regular: any;
+  bold: any;
+  BLACK: any;
+  LIGHT_GREY: any;
+  S_TITLE: number;
+  S_HEADER: number;
+  S_NORMAL: number;
+  S_SMALL: number;
+  PAGE_W: number;
+  PAGE_H: number;
+  currentY: number;
+}
+
 // ── main export ───────────────────────────────────────────────────────────────
 
 /**
- * Generates a GST Tax Invoice PDF.
- *
- * @param template  – contents of utils/template.json
- * @param dataParam – { invoiceData, companyData }  (the shape used by create/page.tsx)
- * @returns Uint8Array PDF bytes
+ * Generates a GST Tax Invoice PDF following the template structure.
  */
 export async function generateInvoicePdf(
   template: any,
@@ -42,12 +53,11 @@ export async function generateInvoicePdf(
     invoiceData = dataParam.invoiceData;
     companyData = dataParam.companyData || {};
   } else {
-    // legacy: the whole object is invoice data
     invoiceData = dataParam;
     companyData = {};
   }
 
-  // Flatten company fields (Company model uses camelCase)
+  // Flatten company fields
   const company = {
     name: companyData?.companyName || companyData?.company_name || companyData?.name || "",
     address: companyData?.address || "",
@@ -70,544 +80,709 @@ export async function generateInvoicePdf(
     state: cust?.state || cust?.state_name || "",
   };
 
-  // ── 2. Read template page config ────────────────────────────────────────────
-  const PAGE_W = getNum(template?.page?.width) || 595;
-  const PAGE_H = getNum(template?.page?.height) || 842;
-  const MARGIN_L = getNum(template?.page?.margin?.left) || 40;
-  const MARGIN_T = getNum(template?.page?.margin?.top) || 40;
-
-  // Inner canvas dimensions
-  const CANVAS_W = getNum(template?.container?.width) || PAGE_W - 2 * MARGIN_L;
-  const CANVAS_X = getNum(template?.container?.x) || MARGIN_L;
-  const CANVAS_Y_TOP = PAGE_H - MARGIN_T; // PDF Y grows upward
-
-  // ── 3. Create PDF ───────────────────────────────────────────────────────────
+  // ── 2. Create PDF ───────────────────────────────────────────────────────────
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+  const page = pdfDoc.addPage([595, 842]); // A4
 
   const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const styles = template?.styles || {};
-  const S_TITLE = getNum(styles.title?.fontSize) || 14;
-  const S_HEADER = getNum(styles.header?.fontSize) || 10;
-  const S_NORMAL = getNum(styles.normal?.fontSize) || 9;
-  const S_SMALL = getNum(styles.small?.fontSize) || 8;
-
-  // pdf-lib uses BOTTOM-LEFT origin. We store template Y values as "distance
-  // from top", so we convert:  pdfY = PAGE_H - templateY
-  const pdfY = (templateY: number) => PAGE_H - templateY;
-
-  const BLACK = rgb(0, 0, 0);
-  const LIGHT_GREY = rgb(0.92, 0.92, 0.92);
-
-  // ── drawing primitives ──────────────────────────────────────────────────────
-
-  const drawText = (
-    text: string,
-    x: number,
-    y: number,
-    size: number,
-    font = regular,
-    color = BLACK,
-    maxWidth?: number
-  ) => {
-    if (!text) return;
-    const str = String(text);
-
-    if (maxWidth && font.widthOfTextAtSize(str, size) > maxWidth) {
-      // simple word-wrap
-      const words = str.split(" ");
-      let line = "";
-      let currentY = y;
-      const lineH = size + 2;
-      for (const word of words) {
-        const test = line ? `${line} ${word}` : word;
-        if (font.widthOfTextAtSize(test, size) > maxWidth) {
-          if (line) page.drawText(line, { x, y: currentY, size, font, color });
-          currentY -= lineH;
-          line = word;
-        } else {
-          line = test;
-        }
-      }
-      if (line) page.drawText(line, { x, y: currentY, size, font, color });
-      return;
-    }
-
-    page.drawText(str, { x, y, size, font, color });
+  const ctx: DrawContext = {
+    page,
+    regular,
+    bold,
+    BLACK: rgb(0, 0, 0),
+    LIGHT_GREY: rgb(0.92, 0.92, 0.92),
+    S_TITLE: 14,
+    S_HEADER: 10,
+    S_NORMAL: 9,
+    S_SMALL: 8,
+    PAGE_W: 595,
+    PAGE_H: 842,
+    currentY: 842 - 40, // Start from top with margin
   };
 
-  const drawRect = (
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    opts?: { fill?: any; borderWidth?: number }
-  ) => {
-    page.drawRectangle({
-      x,
-      y: y - h,          // pdf-lib: y is bottom-left
-      width: w,
-      height: h,
-      borderColor: BLACK,
-      borderWidth: opts?.borderWidth ?? 0.5,
-      color: opts?.fill,
-    });
+  const data = {
+    invoice: template.invoice,
+    invoiceData,
+    company,
+    customer,
   };
 
-  const drawHLine = (x1: number, y: number, x2: number, thickness = 0.5) => {
-    page.drawLine({ start: { x: x1, y }, end: { x: x2, y }, thickness, color: BLACK });
-  };
+  // ── 3. Render sections from template ─────────────────────────────────────────
+  const sections = template.layout?.sections || [];
+  const MARGIN_L = 40;
+  const MARGIN_R = 40;
+  const MARGIN_B = 40;
+  const contentWidth = ctx.PAGE_W - MARGIN_L - MARGIN_R;
 
-  // ── 4. Outer container border ───────────────────────────────────────────────
-  if (template?.container?.border) {
-    const cH = getNum(template.container.height) || PAGE_H - 2 * MARGIN_T;
-    drawRect(CANVAS_X, pdfY(MARGIN_T - cH + PAGE_H - CANVAS_Y_TOP + MARGIN_T), CANVAS_W, cH);
-    // Simpler: draw using raw template coords
-    page.drawRectangle({
-      x: getNum(template.container.x),
-      y: PAGE_H - getNum(template.container.y) - getNum(template.container.height),
-      width: getNum(template.container.width),
-      height: getNum(template.container.height),
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-  }
+  for (const section of sections) {
+    ctx.currentY -= 5; // gap between sections
 
-  // ── 5. Title "TAX INVOICE" ─────────────────────────────────────────────────
-  const titleText = "TAX INVOICE";
-  const titleW = bold.widthOfTextAtSize(titleText, S_TITLE);
-  drawText(titleText, PAGE_W / 2 - titleW / 2, pdfY(MARGIN_T + 15), S_TITLE, bold);
-  drawHLine(CANVAS_X, pdfY(MARGIN_T + 22), CANVAS_X + CANVAS_W);
+    switch (section.type) {
+      case "full_width_centered_text":
+        renderFullWidthCenteredText(ctx, section, data, contentWidth);
+        break;
 
-  // ── 6. Seller block ─────────────────────────────────────────────────────────
-  {
-    const blk = template?.sellerBlock || {};
-    const bx = getNum(blk.x) || MARGIN_L + 10;
-    const by = getNum(blk.y) || MARGIN_T + 25;
-    const bw = getNum(blk.width) || 250;
-    const bh = getNum(blk.height) || 120;
+      case "two_column_split":
+        renderTwoColumnSplit(ctx, section, data, contentWidth, MARGIN_L);
+        break;
 
-    // Draw border for this block
-    page.drawRectangle({
-      x: bx,
-      y: PAGE_H - by - bh,
-      width: bw,
-      height: bh,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
+      case "table":
+        renderTable(ctx, section, data, contentWidth, MARGIN_L);
+        break;
 
-    const pad = 5;
-    const lineH = 13;
-    let cy = pdfY(by + pad);
+      case "full_width_text":
+        renderFullWidthText(ctx, section, data, contentWidth, MARGIN_L);
+        break;
 
-    const fieldMap: Record<string, string> = {
-      "seller.company": company.name,
-      "seller.address1": company.address,
-      "seller.address2": "",
-      "seller.address3": "",
-      "seller.gstin": company.gstin,
-      "seller.state": company.state,
-      "seller.email": company.email,
-    };
-
-    const rows: Array<{ label: string; field: string }> = blk.rows || [];
-    for (const row of rows) {
-      const val = fieldMap[row.field] ?? "";
-      if (!val) continue;
-      const label = row.label ? `${row.label}: ` : "";
-      const isFirst = row.field === "seller.company";
-      drawText(label + val, bx + pad, cy, isFirst ? S_HEADER : S_SMALL, isFirst ? bold : regular, BLACK, bw - pad * 2);
-      cy -= lineH;
-    }
-  }
-
-  // ── 7. Invoice meta boxes (right column) ────────────────────────────────────
-  {
-    const metaBoxes: any[] = template?.invoiceMetaBoxes || [];
-
-    const metaValues: Record<string, string> = {
-      invoiceNo: invoiceData?.invoiceNumber || "",
-      date: invoiceData?.invoiceDate
-        ? new Date(invoiceData.invoiceDate).toLocaleDateString("en-IN")
-        : "",
-      deliveryNote: "",
-      paymentTerms: "",
-      referenceNo: "",
-      otherReferences: "",
-      buyerOrderNo: "",
-      buyerDate: "",
-      dispatchDocNo: "",
-      deliveryDate: "",
-      dispatchThrough: "",
-      destination: "",
-      deliveryTerms: "",
-    };
-
-    for (const box of metaBoxes) {
-      const bx = getNum(box.x);
-      const by = getNum(box.y);
-      const bw = getNum(box.width);
-      const bh = getNum(box.height);
-
-      page.drawRectangle({
-        x: bx,
-        y: PAGE_H - by - bh,
-        width: bw,
-        height: bh,
-        borderColor: BLACK,
-        borderWidth: 0.5,
-      });
-
-      const title: string = box.title || "";
-      const value: string = metaValues[box.field] || "";
-      const pad = 4;
-
-      // title label (small)
-      drawText(title, bx + pad, pdfY(by + pad + 2), S_SMALL - 1, regular);
-      // value (slightly larger, bold if filled)
-      if (value) {
-        drawText(value, bx + pad, pdfY(by + pad + 2 + S_SMALL + 2), S_SMALL, bold);
-      }
-    }
-  }
-
-  // ── 8. Consignee block ──────────────────────────────────────────────────────
-  {
-    const blk = template?.consigneeBlock || {};
-    const bx = getNum(blk.x) || MARGIN_L + 10;
-    const by = getNum(blk.y) || 175;
-    const bw = getNum(blk.width) || 250;
-    const bh = getNum(blk.height) || 95;
-
-    page.drawRectangle({
-      x: bx,
-      y: PAGE_H - by - bh,
-      width: bw,
-      height: bh,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    const pad = 5;
-    const lineH = 12;
-    let cy = pdfY(by + pad);
-
-    drawText("Consignee (Ship to):", bx + pad, cy, S_SMALL, bold);
-    cy -= lineH;
-
-    const fieldMap: Record<string, string> = {
-      "buyer.name": customer.name,
-      "buyer.address": customer.address,
-      "buyer.gstin": customer.gstin,
-      "buyer.state": customer.state,
-    };
-
-    const rows: Array<{ label: string; field: string }> = blk.rows || [];
-    for (const row of rows) {
-      const val = fieldMap[row.field] ?? "";
-      if (!val || row.label === "Consignee") continue; // header already drawn
-      const label = row.label ? `${row.label}: ` : "";
-      drawText(label + val, bx + pad, cy, S_SMALL, regular, BLACK, bw - pad * 2);
-      cy -= lineH;
-    }
-  }
-
-  // ── 9. Buyer block (Bill To) ────────────────────────────────────────────────
-  {
-    const blk = template?.buyerBlock || {};
-    const bx = getNum(blk.x) || MARGIN_L + 10;
-    const by = getNum(blk.y) || 270;
-    const bw = getNum(blk.width) || 250;
-    const bh = getNum(blk.height) || 95;
-
-    page.drawRectangle({
-      x: bx,
-      y: PAGE_H - by - bh,
-      width: bw,
-      height: bh,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    const pad = 5;
-    const lineH = 12;
-    let cy = pdfY(by + pad);
-
-    drawText("Buyer (Bill to):", bx + pad, cy, S_SMALL, bold);
-    cy -= lineH;
-
-    const fieldMap: Record<string, string> = {
-      "billTo.name": customer.name,
-      "billTo.address": customer.address,
-      "billTo.gstin": customer.gstin,
-      "billTo.state": customer.state,
-    };
-
-    const rows: Array<{ label: string; field: string }> = blk.rows || [];
-    for (const row of rows) {
-      const val = fieldMap[row.field] ?? "";
-      if (!val || row.label === "Buyer") continue;
-      const label = row.label ? `${row.label}: ` : "";
-      drawText(label + val, bx + pad, cy, S_SMALL, regular, BLACK, bw - pad * 2);
-      cy -= lineH;
-    }
-  }
-
-  // ── 10. Items table ─────────────────────────────────────────────────────────
-  {
-    const tbl = template?.itemsTable || {};
-    const tx = getNum(tbl.x) || MARGIN_L + 10;
-    const ty = getNum(tbl.y) || 380;
-    const tw = getNum(tbl.width) || CANVAS_W - 20;
-    const columns: any[] = tbl.columns || [];
-
-    const ROW_H = 16;
-    const HDR_H = 18;
-    const lineItems: any[] = invoiceData?.items || [];
-    const MIN_ROWS = 10;
-    const totalRows = Math.max(lineItems.length, MIN_ROWS);
-
-    const tableHeight = HDR_H + totalRows * ROW_H + 4 * ROW_H + 10; // rows + tax rows buffer
-
-    // Outer border
-    page.drawRectangle({
-      x: tx,
-      y: PAGE_H - ty - tableHeight,
-      width: tw,
-      height: tableHeight,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    // Header row background
-    page.drawRectangle({
-      x: tx,
-      y: PAGE_H - ty - HDR_H,
-      width: tw,
-      height: HDR_H,
-      color: LIGHT_GREY,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    // Draw column headers & vertical dividers
-    let cx = tx;
-    for (const col of columns) {
-      const cw = getNum(col.width);
-      drawText(col.title || "", cx + 3, pdfY(ty + 4), S_SMALL, bold);
-      // vertical divider
-      if (cx > tx) {
-        page.drawLine({
-          start: { x: cx, y: PAGE_H - ty - tableHeight },
-          end: { x: cx, y: PAGE_H - ty },
-          thickness: 0.5,
-          color: BLACK,
-        });
-      }
-      cx += cw;
+      default:
+        break;
     }
 
-    // Data rows
-    let rowY = ty + HDR_H;
-    for (let i = 0; i < totalRows; i++) {
-      const item = lineItems[i] || {};
-      cx = tx;
-
-      // row bottom line
-      drawHLine(tx, pdfY(rowY + ROW_H), tx + tw);
-
-      for (const col of columns) {
-        const cw = getNum(col.width);
-        let cellText = "";
-
-        switch (col.field) {
-          case "description":
-            cellText = item.productName || item.description || "";
-            break;
-          case "hsn":
-            cellText = item.hsnCode || item.hsn_sac || item.hsn || "";
-            break;
-          case "quantity":
-            cellText = item.qty != null ? `${item.qty} ${item.unit || ""}`.trim() : "";
-            break;
-          case "rate":
-            cellText = item.rate ? formatINR(getNum(item.rate)) : "";
-            break;
-          case "amount":
-            cellText = item.amount ? formatINR(getNum(item.amount)) : "";
-            break;
-          default:
-            cellText = item[col.field] != null ? String(item[col.field]) : "";
-        }
-
-        const textSize = S_SMALL;
-        const isRight = col.field === "rate" || col.field === "amount";
-        let drawX = cx + 3;
-        if (isRight && cellText) {
-          drawX = cx + cw - 3 - regular.widthOfTextAtSize(cellText, textSize);
-        }
-        drawText(cellText, drawX, pdfY(rowY + 4), textSize, regular);
-        cx += cw;
-      }
-
-      rowY += ROW_H;
+    if (ctx.currentY < MARGIN_B) {
+      // Would overflow, stop rendering
+      break;
     }
-
-    // ── Tax rows ────────────────────────────────────────────────────────────
-    const taxSection = template?.taxSection || {};
-    const taxRows: any[] = taxSection.rows || [
-      { label: "CGST", field: "cgst" },
-      { label: "SGST", field: "sgst" },
-      { label: "Round Off", field: "roundOff" },
-      { label: "Grand Total", field: "grandTotal" },
-    ];
-
-    const taxValues: Record<string, number> = {
-      cgst: getNum(invoiceData?.cgstAmount),
-      sgst: getNum(invoiceData?.sgstAmount),
-      roundOff: getNum(invoiceData?.roundoff),
-      grandTotal: getNum(invoiceData?.grandTotal),
-    };
-
-    for (const taxRow of taxRows) {
-      const val = taxValues[taxRow.field];
-      const isGrandTotal = taxRow.field === "grandTotal";
-
-      drawHLine(tx, pdfY(rowY + ROW_H), tx + tw);
-
-      cx = tx;
-      for (const col of columns) {
-        const cw = getNum(col.width);
-        let cellText = "";
-
-        if (col.field === "description") {
-          cellText = taxRow.label;
-        } else if (col.field === "amount") {
-          cellText = val !== undefined ? formatINR(val) : "";
-        }
-
-        if (cellText) {
-          const isRight = col.field === "amount";
-          let drawX = cx + 3;
-          const f = isGrandTotal ? bold : regular;
-          if (isRight) {
-            drawX = cx + cw - 3 - f.widthOfTextAtSize(cellText, S_SMALL);
-          }
-          drawText(cellText, drawX, pdfY(rowY + 4), S_SMALL, f);
-        }
-        cx += cw;
-      }
-
-      rowY += ROW_H;
-    }
-  }
-
-  // ── 11. Amount in words ─────────────────────────────────────────────────────
-  {
-    const awBlk = template?.amountWords || {};
-    const ax = getNum(awBlk.x) || MARGIN_L + 10;
-    const ay = getNum(awBlk.y) || 660;
-    const aw = getNum(awBlk.width) || CANVAS_W - 20;
-    const words = invoiceData?.amountWords || "";
-
-    page.drawRectangle({
-      x: ax,
-      y: PAGE_H - ay - 25,
-      width: aw,
-      height: 25,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    drawText("Amount Chargeable (in words):", ax + 5, pdfY(ay + 5), S_SMALL, regular);
-    drawText(`INR ${words} Only`, ax + 5, pdfY(ay + 15), S_SMALL, bold, BLACK, aw - 10);
-  }
-
-  // ── 12. Bank details ────────────────────────────────────────────────────────
-  {
-    const bdBlk = template?.bankDetails || {};
-    const bx = getNum(bdBlk.x) || MARGIN_L + 10;
-    const by = getNum(bdBlk.y) || 700;
-    const bw = 250;
-    const bh = 70;
-
-    page.drawRectangle({
-      x: bx,
-      y: PAGE_H - by - bh,
-      width: bw,
-      height: bh,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    const pad = 5;
-    const lineH = 12;
-    let cy = pdfY(by + pad);
-
-    drawText("Bank Details:", bx + pad, cy, S_SMALL, bold);
-    cy -= lineH;
-
-    const bankValues: Record<string, string> = {
-      "bank.name": company.bankName,
-      "bank.account": company.accountNo,
-      "bank.ifsc": company.ifsc,
-      "bank.branch": company.branch,
-    };
-
-    const rows: any[] = bdBlk.rows || [];
-    for (const row of rows) {
-      const val = bankValues[row.field] ?? "";
-      if (!val) continue;
-      drawText(`${row.label}: ${val}`, bx + pad, cy, S_SMALL, regular, BLACK, bw - pad * 2);
-      cy -= lineH;
-    }
-  }
-
-  // ── 13. Signature block ─────────────────────────────────────────────────────
-  {
-    const sig = template?.signature || {};
-    const sx = getNum(sig.x) || 420;
-    const sy = getNum(sig.y) || 720;
-    const sw = CANVAS_X + CANVAS_W - sx;
-    const sh = 60;
-
-    page.drawRectangle({
-      x: sx,
-      y: PAGE_H - sy - sh,
-      width: sw,
-      height: sh,
-      borderColor: BLACK,
-      borderWidth: 0.5,
-    });
-
-    drawText(`for ${company.name}`, sx + 5, pdfY(sy + 5), S_SMALL, regular);
-    drawText(sig.text || "Authorised Signatory", sx + 5, pdfY(sy + sh - 10), S_SMALL, bold);
-  }
-
-  // ── 14. Footer ──────────────────────────────────────────────────────────────
-  {
-    const ftr = template?.footer || {};
-    const fx = getNum(ftr.x) || MARGIN_L + 10;
-    const fy = getNum(ftr.y) || 790;
-    const text = ftr.text || "This is a Computer Generated Invoice";
-    const tw2 = CANVAS_W - 20;
-    const textW = regular.widthOfTextAtSize(text, S_SMALL);
-    drawText(text, fx + (tw2 - textW) / 2, pdfY(fy), S_SMALL, regular);
-  }
-
-  // ── 15. Declaration ─────────────────────────────────────────────────────────
-  {
-    const decl =
-      companyData?.declaration ||
-      "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.";
-    drawText(decl, CANVAS_X + 10, pdfY(700), S_SMALL, regular, BLACK, 240);
   }
 
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
+}
+
+
+// ── Render Functions ────────────────────────────────────────────────────────
+
+function renderFullWidthCenteredText(
+  ctx: DrawContext,
+  section: any,
+  data: any,
+  contentWidth: number,
+) {
+  const value = getFieldValue(section.value_key || section.content_key, data);
+  if (!value) return;
+
+  const text = String(value);
+  const size = ctx.S_TITLE;
+  const font = ctx.bold;
+
+  const textWidth = font.widthOfTextAtSize(text, size);
+  const x = (ctx.PAGE_W - textWidth) / 2;
+
+  ctx.page.drawText(text, { x, y: ctx.currentY - size, size, font, color: ctx.BLACK });
+  ctx.currentY -= size + 8;
+
+  if (section.style?.border_bottom) {
+    ctx.page.drawLine({
+      start: { x: 40, y: ctx.currentY },
+      end: { x: ctx.PAGE_W - 40, y: ctx.currentY },
+      thickness: 0.5,
+      color: ctx.BLACK,
+    });
+    ctx.currentY -= 3;
+  }
+}
+
+function renderTwoColumnSplit(
+  ctx: DrawContext,
+  section: any,
+  data: any,
+  contentWidth: number,
+  marginL: number,
+) {
+  const left = section.left || {};
+  const right = section.right || {};
+
+  const leftWidth = (contentWidth * (left.width_percent || 50)) / 100;
+  const rightWidth = (contentWidth * (right.width_percent || 50)) / 100;
+  const rightX = marginL + leftWidth;
+
+  const startY = ctx.currentY;
+
+  // Render left column
+  if (left.content === "seller_block") {
+    renderSellerBlock(ctx, left, data, marginL, leftWidth);
+  } else if (left.content === "meta_grid") {
+    renderMetaGrid(ctx, left, data, marginL, leftWidth);
+  } else if (left.rows) {
+    renderBlockRows(ctx, left, data, marginL, leftWidth);
+  }
+
+  // Reset Y for right column
+  ctx.currentY = startY;
+
+  // Render right column
+  if (right.content === "seller_block") {
+    renderSellerBlock(ctx, right, data, rightX, rightWidth);
+  } else if (right.content === "meta_grid") {
+    renderMetaGrid(ctx, right, data, rightX, rightWidth);
+  } else if (right.content === "consignee_block") {
+    renderConsigneeBlock(ctx, right, data, rightX, rightWidth);
+  } else if (right.content === "buyer_block") {
+    renderBuyerBlock(ctx, right, data, rightX, rightWidth);
+  } else if (right.rows) {
+    renderBlockRows(ctx, right, data, rightX, rightWidth);
+  }
+}
+
+function renderSellerBlock(
+  ctx: DrawContext,
+  block: any,
+  data: any,
+  x: number,
+  width: number,
+) {
+  const company = data.company;
+  const fields = block.fields || [];
+
+  const boxHeight = calculateBoxHeight(ctx, fields.length, ctx.S_SMALL);
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x,
+    y: boxBottom,
+    width,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  let currentY = boxTop - 6;
+  const pad = 5;
+
+  for (const field of fields) {
+    const key = field.key;
+    let text = "";
+
+    if (key === "seller.company_name") {
+      text = company.name;
+    } else if (key === "seller.address_lines") {
+      text = company.address;
+    } else if (key === "seller.gstin_uin") {
+      text = `${field.label} ${company.gstin}`;
+    } else if (key === "seller.state_name") {
+      text = `${field.label} ${company.state} Code: 27`;
+    } else if (key === "seller.email") {
+      text = `${field.label} ${company.email}`;
+    }
+
+    if (!text) continue;
+
+    const font = field.style === "bold_large" ? ctx.bold : ctx.regular;
+    const size = field.style === "bold_large" ? ctx.S_HEADER : ctx.S_SMALL;
+
+    drawTextInBox(ctx, text, x + pad, currentY, width - pad * 2, size, font);
+    currentY -= size + 4;
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderMetaGrid(
+  ctx: DrawContext,
+  block: any,
+  data: any,
+  x: number,
+  width: number,
+) {
+  const invoice = data.invoice;
+  const rows = block.rows || [];
+
+  const boxHeight = calculateBoxHeight(ctx, rows.length * 2, ctx.S_SMALL);
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x,
+    y: boxBottom,
+    width,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  let currentY = boxTop - 6;
+  const pad = 4;
+  const colWidth = (width - pad * 2) / 2;
+
+  for (const row of rows) {
+    const cols = row.cols || [];
+
+    for (let i = 0; i < cols.length; i++) {
+      const col = cols[i];
+      const colX = x + pad + i * colWidth;
+
+      // Label
+      drawTextInBox(ctx, col.label, colX, currentY, colWidth - 2, ctx.S_SMALL - 1, ctx.regular);
+      currentY -= ctx.S_SMALL + 1;
+
+      // Value
+      const value = getFieldValue(col.value_key, data);
+      if (value) {
+        drawTextInBox(ctx, String(value), colX, currentY, colWidth - 2, ctx.S_SMALL, ctx.bold);
+      }
+      currentY -= ctx.S_SMALL + 2;
+    }
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderConsigneeBlock(
+  ctx: DrawContext,
+  block: any,
+  data: any,
+  x: number,
+  width: number,
+) {
+  const customer = data.customer;
+  const fields = block.fields || [];
+
+  const boxHeight = calculateBoxHeight(ctx, fields.length + 1, ctx.S_SMALL);
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x,
+    y: boxBottom,
+    width,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  let currentY = boxTop - 6;
+  const pad = 5;
+
+  // Title
+  drawTextInBox(ctx, block.label, x + pad, currentY, width - pad * 2, ctx.S_SMALL, ctx.bold);
+  currentY -= ctx.S_SMALL + 4;
+
+  for (const field of fields) {
+    const key = field.key;
+    let text = "";
+
+    if (key === "consignee.company_name") {
+      text = customer.name;
+    } else if (key === "consignee.gstin_uin") {
+      text = `${field.label} ${customer.gstin}`;
+    } else if (key === "consignee.state_name") {
+      text = `${field.label} ${customer.state}`;
+    }
+
+    if (!text) continue;
+
+    drawTextInBox(ctx, text, x + pad, currentY, width - pad * 2, ctx.S_SMALL, ctx.regular);
+    currentY -= ctx.S_SMALL + 3;
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderBuyerBlock(
+  ctx: DrawContext,
+  block: any,
+  data: any,
+  x: number,
+  width: number,
+) {
+  const customer = data.customer;
+  const fields = block.fields || [];
+
+  const boxHeight = calculateBoxHeight(ctx, fields.length + 1, ctx.S_SMALL);
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x,
+    y: boxBottom,
+    width,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  let currentY = boxTop - 6;
+  const pad = 5;
+
+  // Title
+  drawTextInBox(ctx, block.label, x + pad, currentY, width - pad * 2, ctx.S_SMALL, ctx.bold);
+  currentY -= ctx.S_SMALL + 4;
+
+  for (const field of fields) {
+    const key = field.key;
+    let text = "";
+
+    if (key === "buyer.company_name") {
+      text = customer.name;
+    } else if (key === "buyer.gstin_uin") {
+      text = `${field.label} ${customer.gstin}`;
+    } else if (key === "buyer.state_name") {
+      text = `${field.label} ${customer.state}`;
+    }
+
+    if (!text) continue;
+
+    drawTextInBox(ctx, text, x + pad, currentY, width - pad * 2, ctx.S_SMALL, ctx.regular);
+    currentY -= ctx.S_SMALL + 3;
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderTable(
+  ctx: DrawContext,
+  section: any,
+  data: any,
+  contentWidth: number,
+  marginL: number,
+) {
+  const headerRow = section.header_row || {};
+  const columns = headerRow.columns || [];
+  const lineItems = data.invoiceData?.items || [];
+
+  const colWidths = columns.map((col: any) => (contentWidth * col.width_percent) / 100);
+
+  const rowHeight = 14;
+  const headerHeight = 16;
+  const taxRowCount = 4; // CGST, SGST, Round Off, Total
+  const minRows = 3;
+  const dataRowCount = Math.max(lineItems.length, minRows);
+  const totalHeight = headerHeight + dataRowCount * rowHeight + taxRowCount * rowHeight + 10;
+
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - totalHeight;
+
+  // Draw outer border
+  ctx.page.drawRectangle({
+    x: marginL,
+    y: boxBottom,
+    width: contentWidth,
+    height: totalHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  // Draw header background
+  ctx.page.drawRectangle({
+    x: marginL,
+    y: boxTop - headerHeight,
+    width: contentWidth,
+    height: headerHeight,
+    color: ctx.LIGHT_GREY,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  // Draw header text and column dividers
+  let colX = marginL;
+  for (let i = 0; i < columns.length; i++) {
+    const col = columns[i];
+    const colW = colWidths[i];
+
+    drawTextInBox(ctx, col.label, colX + 3, boxTop - 6, colW - 6, ctx.S_SMALL, ctx.bold);
+
+    if (i > 0) {
+      ctx.page.drawLine({
+        start: { x: colX, y: boxBottom },
+        end: { x: colX, y: boxTop },
+        thickness: 0.5,
+        color: ctx.BLACK,
+      });
+    }
+    colX += colW;
+  }
+
+  // Draw data rows
+  let rowY = boxTop - headerHeight;
+  for (let i = 0; i < dataRowCount; i++) {
+    const item = lineItems[i] || {};
+
+    colX = marginL;
+    for (let j = 0; j < columns.length; j++) {
+      const col = columns[j];
+      const colW = colWidths[j];
+      let cellText = "";
+
+      switch (col.id) {
+        case "description":
+          cellText = item.productName || item.description || "";
+          break;
+        case "hsn_sac":
+          cellText = item.hsnCode || item.hsn_sac || item.hsn || "";
+          break;
+        case "quantity":
+          cellText = item.qty != null ? String(item.qty) : "";
+          break;
+        case "rate":
+          cellText = item.rate ? formatINR(getNum(item.rate)) : "";
+          break;
+        case "per":
+          cellText = item.unit || "";
+          break;
+        case "amount":
+          cellText = item.amount ? formatINR(getNum(item.amount)) : "";
+          break;
+      }
+
+      const align = col.align === "right" ? "right" : "left";
+      drawTextInBox(
+        ctx,
+        cellText,
+        colX + 2,
+        rowY - 3,
+        colW - 4,
+        ctx.S_SMALL,
+        ctx.regular,
+        align,
+      );
+
+      colX += colW;
+    }
+
+    // Draw row divider
+    ctx.page.drawLine({
+      start: { x: marginL, y: rowY - rowHeight },
+      end: { x: marginL + contentWidth, y: rowY - rowHeight },
+      thickness: 0.5,
+      color: ctx.BLACK,
+    });
+
+    rowY -= rowHeight;
+  }
+
+  // Draw tax rows
+  const taxValues = {
+    cgst: getNum(data.invoiceData?.cgstAmount),
+    sgst: getNum(data.invoiceData?.sgstAmount),
+    roundoff: getNum(data.invoiceData?.roundoff),
+    grandTotal: getNum(data.invoiceData?.grandTotal),
+  };
+
+  const taxLabels = [
+    { label: "CGST", value: taxValues.cgst },
+    { label: "SGST", value: taxValues.sgst },
+    { label: "Round Off", value: taxValues.roundoff },
+    { label: "Grand Total", value: taxValues.grandTotal, isBold: true },
+  ];
+
+  for (const taxRow of taxLabels) {
+    colX = marginL;
+
+    for (let j = 0; j < columns.length; j++) {
+      const col = columns[j];
+      const colW = colWidths[j];
+      let cellText = "";
+
+      if (col.id === "description") {
+        cellText = taxRow.label;
+      } else if (col.id === "amount") {
+        cellText = formatINR(taxRow.value);
+      }
+
+      if (cellText) {
+        const font = taxRow.isBold ? ctx.bold : ctx.regular;
+        const align = col.align === "right" ? "right" : "left";
+        drawTextInBox(ctx, cellText, colX + 2, rowY - 3, colW - 4, ctx.S_SMALL, font, align);
+      }
+
+      colX += colW;
+    }
+
+    ctx.page.drawLine({
+      start: { x: marginL, y: rowY - rowHeight },
+      end: { x: marginL + contentWidth, y: rowY - rowHeight },
+      thickness: 0.5,
+      color: ctx.BLACK,
+    });
+
+    rowY -= rowHeight;
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderFullWidthText(
+  ctx: DrawContext,
+  section: any,
+  data: any,
+  contentWidth: number,
+  marginL: number,
+) {
+  const label = section.label || "";
+  const value = getFieldValue(section.value_key, data) || "";
+
+  const boxHeight = 30;
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x: marginL,
+    y: boxBottom,
+    width: contentWidth,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  const pad = 5;
+  let currentY = boxTop - 6;
+
+  // Draw label
+  drawTextInBox(ctx, label, marginL + pad, currentY, contentWidth - pad * 2, ctx.S_SMALL, ctx.regular);
+  currentY -= ctx.S_SMALL + 2;
+
+  // Draw value
+  drawTextInBox(ctx, String(value), marginL + pad, currentY, contentWidth - pad * 2, ctx.S_SMALL, ctx.bold);
+
+  // Draw right corner text if exists
+  if (section.right_corner_text) {
+    const cornerText = section.right_corner_text;
+    drawTextInBox(
+      ctx,
+      cornerText,
+      marginL + contentWidth - 40,
+      currentY,
+      35,
+      ctx.S_SMALL - 1,
+      ctx.regular,
+      "right",
+    );
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+function renderBlockRows(
+  ctx: DrawContext,
+  block: any,
+  data: any,
+  x: number,
+  width: number,
+) {
+  const rows = block.rows || [];
+  const rowCount = rows.reduce((acc: number, row: any) => acc + (row.fields?.length || 0), 0) + rows.length;
+
+  const boxHeight = calculateBoxHeight(ctx, rowCount, ctx.S_SMALL);
+  const boxTop = ctx.currentY;
+  const boxBottom = boxTop - boxHeight;
+
+  // Draw border
+  ctx.page.drawRectangle({
+    x,
+    y: boxBottom,
+    width,
+    height: boxHeight,
+    borderColor: ctx.BLACK,
+    borderWidth: 0.5,
+  });
+
+  let currentY = boxTop - 6;
+  const pad = 5;
+
+  for (const row of rows) {
+    if (row.label) {
+      drawTextInBox(ctx, row.label, x + pad, currentY, width - pad * 2, ctx.S_SMALL, ctx.bold);
+      currentY -= ctx.S_SMALL + 4;
+    }
+
+    for (const field of row.fields || []) {
+      let text = "";
+      if (field.value_key) {
+        text = getFieldValue(field.value_key, data) || "";
+      } else if (field.value) {
+        text = field.value;
+      }
+
+      if (text) {
+        const font = field.style === "bold" ? ctx.bold : ctx.regular;
+        drawTextInBox(ctx, String(text), x + pad, currentY, width - pad * 2, ctx.S_SMALL, font);
+        currentY -= ctx.S_SMALL + 3;
+      }
+    }
+  }
+
+  ctx.currentY = boxBottom - 5;
+}
+
+// ── Helper Functions ────────────────────────────────────────────────────────
+
+function drawTextInBox(
+  ctx: DrawContext,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  size: number,
+  font: any,
+  align: string = "left",
+) {
+  if (!text) return;
+
+  const str = String(text);
+  const textWidth = font.widthOfTextAtSize(str, size);
+
+  let drawX = x;
+  if (align === "right") {
+    drawX = x + maxWidth - textWidth;
+  } else if (align === "center") {
+    drawX = x + (maxWidth - textWidth) / 2;
+  }
+
+  // Clamp to box boundaries
+  drawX = Math.max(x, Math.min(drawX, x + maxWidth - textWidth));
+
+  if (textWidth > maxWidth) {
+    // Word wrap
+    const words = str.split(" ");
+    let line = "";
+    let currentY = y;
+
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      const testWidth = font.widthOfTextAtSize(test, size);
+
+      if (testWidth > maxWidth) {
+        if (line) {
+          ctx.page.drawText(line, { x: drawX, y: currentY, size, font, color: ctx.BLACK });
+          currentY -= size + 2;
+        }
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+
+    if (line) {
+      ctx.page.drawText(line, { x: drawX, y: currentY, size, font, color: ctx.BLACK });
+    }
+  } else {
+    ctx.page.drawText(str, { x: drawX, y, size, font, color: ctx.BLACK });
+  }
+}
+
+function calculateBoxHeight(ctx: DrawContext, lineCount: number, fontSize: number): number {
+  return Math.max(lineCount * (fontSize + 4) + 10, 50);
+}
+
+function getFieldValue(key: string, data: any): any {
+  if (!key) return "";
+
+  const parts = key.split(".");
+  let value = data;
+
+  for (const part of parts) {
+    if (value == null) return "";
+    value = value[part];
+  }
+
+  return value;
 }
 
 /**
