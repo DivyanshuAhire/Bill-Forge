@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -15,7 +17,7 @@
     }
 
     body {
-      font-family: {{ layout.fonts.primary_family | default('Arial, Helvetica, sans-serif') }};
+      font-family: 'Inter', sans-serif;
       font-size: {{ layout.fonts.base_size_pt | default('9') }}pt;
       color: {{ layout.colors.text_primary | default('#000') }};
       background: #fff;
@@ -107,12 +109,13 @@
       white-space: nowrap;
     }
     
-    .bold { font-weight: bold; }
-    .bold_large { font-weight: bold; font-size: 14pt; }
-    .bold_small { font-weight: bold; font-size: 8pt; }
-    .italic { font-style: italic; }
-    .italic_bold { font-style: italic; font-weight: bold; }
-    .normal { font-weight: normal; }
+    .bold { font-weight: bold; font-size: 10pt; }
+    .bold_large { font-weight: bold; font-size: 12pt; }
+    .bold_small { font-weight: bold; font-size: 9pt; }
+    .italic { font-style: italic; font-size: 9pt; }
+    .italic_bold { font-style: italic; font-weight: bold; font-size: 9pt; }
+    .normal { font-weight: normal; font-size: 9pt; }
+    .normal_small { font-weight: normal; font-size: 8pt; }
   </style>
 </head>
 <body>

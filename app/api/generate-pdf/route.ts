@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const company = {
       company_name: companyData?.companyName || companyData?.name || "",
-      address_lines: [companyData?.address || ""],
+      address_lines: companyData?.address || "",
       gstin_uin: companyData?.gstNumber || companyData?.gstIn || "",
       state_name: companyData?.state || companyData?.state_name || "",
       state_code: "27",

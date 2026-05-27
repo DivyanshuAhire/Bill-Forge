@@ -8,10 +8,15 @@ import {
   Package, 
   FileText, 
   Settings, 
-  LogOut 
+  LogOut,
+  X
 } from "lucide-react";
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   
   const navItems = [
@@ -29,9 +34,14 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-slate-900 text-white h-screen flex flex-col">
-      <div className="p-6">
+    <div className="w-64 bg-slate-900 text-white h-screen flex flex-col shadow-2xl md:shadow-none">
+      <div className="p-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">BillForge</h1>
+        {onClose && (
+          <button onClick={onClose} className="md:hidden text-slate-400 hover:text-white">
+            <X size={24} />
+          </button>
+        )}
       </div>
       
       <nav className="flex-1 mt-6">

@@ -181,7 +181,7 @@ export default function CreateInvoicePage() {
             <CardTitle>Customer Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-w-sm">
+            <div className="space-y-2 max-w-sm w-full">
               <Label>Select Customer</Label>
               <Select onValueChange={(value: any) => setSelectedCustomer(value || "")}>
                 <SelectTrigger>
@@ -203,8 +203,8 @@ export default function CreateInvoicePage() {
           </CardHeader>
           <CardContent>
             {items.map((item, index) => (
-              <div key={index} className="flex gap-4 items-end mb-4">
-                <div className="flex-1 space-y-2">
+              <div key={index} className="flex flex-col md:flex-row gap-4 items-end mb-6 p-4 border rounded-md md:p-0 md:border-0 md:rounded-none bg-muted/10 md:bg-transparent">
+                <div className="w-full md:flex-1 space-y-2">
                   <Label>Product</Label>
                   <Select onValueChange={(val: any) => handleProductChange(index, val)}>
                     <SelectTrigger>
@@ -217,22 +217,22 @@ export default function CreateInvoicePage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="w-24 space-y-2">
+                <div className="w-full md:w-24 space-y-2">
                   <Label>Qty</Label>
                   <Input type="number" value={item.qty} onChange={(e) => handleQtyChange(index, parseFloat(e.target.value))} />
                 </div>
-                <div className="w-32 space-y-2">
+                <div className="w-full md:w-32 space-y-2">
                   <Label>Rate</Label>
                   <Input type="number" value={item.rate} onChange={(e) => handleRateChange(index, parseFloat(e.target.value))} />
                 </div>
-                <div className="w-32 space-y-2">
+                <div className="w-full md:w-32 space-y-2">
                   <Label>Amount</Label>
                   <Input type="number" value={item.amount} disabled />
                 </div>
-                <Button variant="destructive" onClick={() => removeItem(index)}>X</Button>
+                <Button className="w-full md:w-auto mt-2 md:mt-0" variant="destructive" onClick={() => removeItem(index)}>Remove</Button>
               </div>
             ))}
-            <Button variant="outline" onClick={addItem}>+ Add Item</Button>
+            <Button variant="outline" className="w-full md:w-auto mt-2" onClick={addItem}>+ Add Item</Button>
           </CardContent>
         </Card>
 
@@ -253,7 +253,7 @@ export default function CreateInvoicePage() {
           </CardHeader>
           {showDelivery && (
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Delivery Note</Label>
                   <Input placeholder="Delivery Note" value={deliveryDetails.deliveryNote} onChange={e => setDelivery("deliveryNote", e.target.value)} />
@@ -305,7 +305,7 @@ export default function CreateInvoicePage() {
 
         <Card>
           <CardContent className="pt-6">
-            <div className="w-64 ml-auto space-y-2 text-right">
+            <div className="w-full md:w-64 ml-auto space-y-2 text-right">
               <div className="flex justify-between"><span>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>CGST ({cgstPercent}%):</span> <span>₹{cgstAmount.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>SGST ({sgstPercent}%):</span> <span>₹{sgstAmount.toFixed(2)}</span></div>
