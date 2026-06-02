@@ -35,3 +35,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const session = await getSession();
+    if (!session || !session.companyId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    await connectDB();
+    const body = await req.json();
+    const { _id, ...updateData } = body;
+
+    if (!_id) return NextResponse.json({ error: "Customer ID is required" }, { status: 400 });
+
+    const updatedCustomer = await Customer.findOneAndUpdate(
+      { _id, companyId: session.companyId },
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedCustomer) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, customer: updatedCustomer });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

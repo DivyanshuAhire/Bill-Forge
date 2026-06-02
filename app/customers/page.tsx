@@ -12,6 +12,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", gstNumber: "", address: "", state: "", phone: "", email: "" });
 
   const fetchCustomers = async () => {
@@ -24,18 +25,42 @@ export default function CustomersPage() {
     fetchCustomers();
   }, []);
 
-  const handleAddCustomer = async (e: React.FormEvent) => {
+  const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
+    const method = editId ? "PUT" : "POST";
+    const payload = editId ? { _id: editId, ...formData } : formData;
+    
     const res = await fetch("/api/customers", {
-      method: "POST",
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(payload)
     });
+    
     if (res.ok) {
       setIsOpen(false);
       setFormData({ name: "", gstNumber: "", address: "", state: "", phone: "", email: "" });
+      setEditId(null);
       fetchCustomers();
     }
+  };
+
+  const openAddModal = () => {
+    setFormData({ name: "", gstNumber: "", address: "", state: "", phone: "", email: "" });
+    setEditId(null);
+    setIsOpen(true);
+  };
+
+  const openEditModal = (customer: any) => {
+    setFormData({
+      name: customer.name || "",
+      gstNumber: customer.gstNumber || "",
+      address: customer.address || "",
+      state: customer.state || "",
+      phone: customer.phone || "",
+      email: customer.email || "",
+    });
+    setEditId(customer._id);
+    setIsOpen(true);
   };
 
   const filteredCustomers = customers.filter((c: any) => 
@@ -51,14 +76,12 @@ export default function CustomersPage() {
           <p className="text-muted-foreground mt-2">Manage your client list.</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger>
-            <Button>Add Customer</Button>
-          </DialogTrigger>
+          <Button onClick={openAddModal}>Add Customer</Button>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Customer</DialogTitle>
+              <DialogTitle>{editId ? "Edit Customer" : "Add New Customer"}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddCustomer} className="space-y-4">
+            <form onSubmit={handleSaveCustomer} className="space-y-4">
               <div className="space-y-2">
                 <Label>Name</Label>
                 <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
@@ -81,7 +104,7 @@ export default function CustomersPage() {
                   <Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label>Email (Optional)</Label>
                   <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
               </div>
@@ -108,6 +131,7 @@ export default function CustomersPage() {
               <TableHead>State</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -118,6 +142,11 @@ export default function CustomersPage() {
                 <TableCell>{customer.state || "-"}</TableCell>
                 <TableCell>{customer.phone || "-"}</TableCell>
                 <TableCell>{customer.email || "-"}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" onClick={() => openEditModal(customer)}>
+                    Edit
+                  </Button>
+                </TableCell>
               </TableRow>
             )) : (
               <TableRow>

@@ -320,7 +320,7 @@
             {
               "id": "hsn_sac",
               "label": "HSN/SAC",
-              "width_percent": 12,
+              "width_percent": 13,
               "align": "center"
             },
             {
@@ -351,9 +351,10 @@
         },
         "body_rows": {
           "source": "invoice.line_items",
-          "min_empty_rows": 10,
+          "min_empty_rows": 0,
           "row_height_mm": 7,
-          "cell_padding_mm": 2
+          "cell_padding_mm": 2,
+          "padding_bottom_mm": 20
         },
         "sub_rows_after_items": [
           {
@@ -462,8 +463,8 @@
                   "style": "normal"
                 },
                 {
-                  "label": "Branch & IFS Code :",
-                  "value_template": "{invoice.bank_details.branch} & {invoice.bank_details.ifsc_code}",
+                  "label": "IFS Code :",
+                  "value_template": "{invoice.bank_details.ifsc_code}",
                   "style": "normal"
                 }
               ]
