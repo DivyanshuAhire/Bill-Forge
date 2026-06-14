@@ -1,0 +1,270 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { pdf } from "@react-pdf/renderer";
+import { InvoicePDF } from "@/components/InvoicePDF";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import * as converter from "number-to-words";
+
+export default function CreateInvoice() {
+  const [settings, setSettings] = useState<any>({});
+  const [clients, setClients] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  const [invoiceData, setInvoiceData] = useState<any>({
+    invoiceNo: "",
+    dated: new Date().toISOString().split("T")[0],
+    buyerId: "",
+    buyer: {},
+    consignee: {},
+    lineItems: [],
+    totals: { subtotal: 0, cgstTotal: 0, sgstTotal: 0, totalTax: 0, roundOff: 0, grandTotal: 0, totalQuantity: 0, amountInWords: "" },
+  });
+
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(setSettings);
+    fetch("/api/clients").then(r => r.json()).then(setClients);
+    fetch("/api/products").then(r => r.json()).then(setProducts);
+    fetch("/api/invoices/next").then(r => r.json()).then(data => {
+      if (data.nextInvoiceNo) {
+        setInvoiceData((prev: any) => ({ ...prev, invoiceNo: data.nextInvoiceNo }));
+      }
+    });
+  }, []);
+
+  const handleBuyerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const buyerId = e.target.value;
+    const buyer = clients.find(c => c._id === buyerId);
+    setInvoiceData({ ...invoiceData, buyerId, buyer: buyer || {}, consignee: buyer || {} });
+  };
+
+  const addLineItem = () => {
+    setInvoiceData({
+      ...invoiceData,
+      lineItems: [
+        ...invoiceData.lineItems,
+        { productId: "", slNo: invoiceData.lineItems.length + 1, description: "", hsnSac: "", quantity: 1, unit: "", rate: 0, amount: 0, cgstRate: 0, sgstRate: 0, cgstAmount: 0, sgstAmount: 0 }
+      ]
+    });
+  };
+
+  const updateLineItem = (index: number, field: string, value: any) => {
+    const newItems = [...invoiceData.lineItems];
+    
+    if (field === "productId") {
+      const product = products.find(p => p._id === value);
+      if (product) {
+        newItems[index] = { ...newItems[index], productId: value, description: product.description, hsnSac: product.hsnSac, unit: product.unit, rate: product.rate, cgstRate: product.cgstRate, sgstRate: product.sgstRate };
+      }
+    } else {
+      newItems[index][field] = value;
+    }
+
+    // Auto calculate
+    const qty = parseFloat(newItems[index].quantity) || 0;
+    const rate = parseFloat(newItems[index].rate) || 0;
+    const amount = qty * rate;
+    const cgstAmount = amount * ((parseFloat(newItems[index].cgstRate) || 0) / 100);
+    const sgstAmount = amount * ((parseFloat(newItems[index].sgstRate) || 0) / 100);
+
+    newItems[index].amount = amount;
+    newItems[index].cgstAmount = cgstAmount;
+    newItems[index].sgstAmount = sgstAmount;
+
+    recalculateTotals(newItems);
+  };
+
+  const removeLineItem = (index: number) => {
+    const newItems = invoiceData.lineItems.filter((_: any, i: number) => i !== index);
+    recalculateTotals(newItems);
+  };
+
+  const recalculateTotals = (items: any[]) => {
+    let subtotal = 0;
+    let cgstTotal = 0;
+    let sgstTotal = 0;
+    let totalQuantity = 0;
+
+    items.forEach(i => {
+      subtotal += i.amount;
+      cgstTotal += i.cgstAmount;
+      sgstTotal += i.sgstAmount;
+      totalQuantity += parseFloat(i.quantity) || 0;
+    });
+
+    const totalTax = cgstTotal + sgstTotal;
+    const rawGrandTotal = subtotal + totalTax;
+    const grandTotal = Math.round(rawGrandTotal);
+    const roundOff = grandTotal - rawGrandTotal;
+    
+    let amountInWords = "";
+    try {
+      amountInWords = converter.toWords(grandTotal).replace(/-/g, " ").toUpperCase();
+    } catch (e) {}
+
+    setInvoiceData({
+      ...invoiceData,
+      lineItems: items,
+      totals: { subtotal, cgstTotal, sgstTotal, totalTax, roundOff, grandTotal, totalQuantity, amountInWords }
+    });
+  };
+
+  const generatePDF = async () => {
+    const blob = await pdf(<InvoicePDF data={invoiceData} settings={settings} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    
+    // Auto download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Invoice_${invoiceData.invoiceNo}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Auto share on mobile
+    if (navigator.share) {
+      const file = new File([blob], `Invoice_${invoiceData.invoiceNo}.pdf`, { type: "application/pdf" });
+      try {
+        await navigator.share({ files: [file], title: `Invoice ${invoiceData.invoiceNo}` });
+      } catch (err) {
+        console.error("Share failed:", err);
+      }
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    await fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invoiceData),
+    });
+    await generatePDF();
+    setSaving(false);
+    window.location.href = "/";
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto pb-12">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Create Invoice</h1>
+      </div>
+
+      <form onSubmit={handleSave} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-8">
+        
+        {/* Meta Info */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Invoice No.</label>
+            <input required type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 font-mono" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
+            <input required type="date" value={invoiceData.dated} onChange={(e) => setInvoiceData({ ...invoiceData, dated: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
+            <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+              <option value="" disabled>Select a client...</option>
+              {clients.map(c => (
+                <option key={c._id} value={c._id}>{c.companyName}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Line Items */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-700">Line Items</h2>
+            <button type="button" onClick={addLineItem} className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-800">
+              <PlusIcon className="w-4 h-4" /> Add Item
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Qty</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">Rate</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">CGST %</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">SGST %</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-32">Amount</th>
+                  <th className="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {invoiceData.lineItems.map((item: any, index: number) => (
+                  <tr key={index}>
+                    <td className="px-3 py-2">
+                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2">
+                        <option value="" disabled>Select...</option>
+                        {products.map(p => <option key={p._id} value={p._id}>{p.description}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input type="number" step="0.01" value={item.rate} onChange={(e) => updateLineItem(index, "rate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input type="number" step="0.1" value={item.cgstRate} onChange={(e) => updateLineItem(index, "cgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                    </td>
+                    <td className="px-3 py-2 text-right text-sm text-gray-900 font-medium">
+                      ₹{item.amount.toFixed(2)}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <button type="button" onClick={() => removeLineItem(index)} className="text-red-600 hover:text-red-800"><TrashIcon className="w-5 h-5" /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Totals Box */}
+        <div className="flex justify-end">
+          <div className="w-72 bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Subtotal:</span>
+              <span>₹{invoiceData.totals.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>CGST:</span>
+              <span>₹{invoiceData.totals.cgstTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>SGST:</span>
+              <span>₹{invoiceData.totals.sgstTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Round Off:</span>
+              <span>₹{invoiceData.totals.roundOff.toFixed(2)}</span>
+            </div>
+            <div className="pt-2 border-t border-gray-200 flex justify-between font-bold text-lg text-gray-900">
+              <span>Grand Total:</span>
+              <span>₹{invoiceData.totals.grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+          <button type="submit" disabled={saving || invoiceData.lineItems.length === 0} className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium disabled:opacity-50 transition-colors shadow-sm">
+            {saving ? "Saving & Generating..." : "Generate Bill & Download PDF"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
