@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import { Invoice } from "@/models/Invoice";
 import { cookies } from "next/headers";
-
+import { User } from "@/models/User";
 export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();

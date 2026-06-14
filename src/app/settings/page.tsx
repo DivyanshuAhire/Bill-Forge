@@ -79,7 +79,9 @@ export default function Settings() {
     setUploadingLogo(true);
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", uploadPreset);
+    if (uploadPreset) {
+      data.append("upload_preset", uploadPreset);
+    }
 
     try {
       if (!cloudName || !uploadPreset) {
