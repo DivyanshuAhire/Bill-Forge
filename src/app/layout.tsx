@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import connectToDatabase from "@/lib/mongodb";
 import { User } from "@/models/User";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,22 +42,20 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
       <body className={`${inter.className} bg-gray-50 text-gray-900`}>
         {isAuthenticated ? (
           <div className="flex h-screen overflow-hidden">
             <div className="hidden md:block"><Sidebar companyName={companyName} /></div>
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
+            <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-16 bg-gray-50">
               {children}
             </main>
           </div>
         ) : (
-          <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50">
+          <main className="flex min-h-screen flex-col items-center justify-center p-24 pb-16 bg-gray-50">
             {children}
           </main>
         )}
+      <MobileNav />
       </body>
     </html>
   );
