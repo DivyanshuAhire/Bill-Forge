@@ -129,11 +129,11 @@ export default function Settings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Company Name</label>
-              <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Invoice Prefix</label>
-              <input type="text" name="invoicePrefix" value={formData.invoicePrefix} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g. INV-" />
+              <input type="text" name="invoicePrefix" value={formData.invoicePrefix} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" placeholder="e.g. INV-" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
@@ -149,19 +149,19 @@ export default function Settings() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">GSTIN / UIN</label>
-              <input type="text" name="gstinUin" value={formData.gstinUin} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="gstinUin" value={formData.gstinUin} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">State Name</label>
-              <input type="text" name="stateName" value={formData.stateName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="stateName" value={formData.stateName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">State Code</label>
-              <input type="text" name="stateCode" value={formData.stateCode} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="stateCode" value={formData.stateCode} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
           </div>
           <div>
@@ -179,19 +179,19 @@ export default function Settings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-              <input type="text" name="bankName" value={formData.bankDetails.bankName} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="bankName" value={formData.bankDetails.bankName} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Account No.</label>
-              <input type="text" name="accountNo" value={formData.bankDetails.accountNo} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="accountNo" value={formData.bankDetails.accountNo} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Branch</label>
-              <input type="text" name="branch" value={formData.bankDetails.branch} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="branch" value={formData.bankDetails.branch} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">IFSC Code</label>
-              <input type="text" name="ifscCode" value={formData.bankDetails.ifscCode} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="ifscCode" value={formData.bankDetails.ifscCode} onChange={(e) => handleChange(e, "bankDetails")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
           </div>
         </div>
@@ -202,19 +202,19 @@ export default function Settings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">Declaration</label>
-              <textarea name="declaration" value={formData.footer.declaration} onChange={(e) => handleChange(e, "footer")} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <textarea name="declaration" value={formData.footer.declaration} onChange={(e) => handleChange(e, "footer")} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Signatory Label (e.g., for Company Name)</label>
-              <input type="text" name="signatoryLabel" value={formData.footer.signatoryLabel} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="signatoryLabel" value={formData.footer.signatoryLabel} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Signatory Title</label>
-              <input type="text" name="signatoryTitle" value={formData.footer.signatoryTitle} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="signatoryTitle" value={formData.footer.signatoryTitle} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Jurisdiction Note</label>
-              <input type="text" name="jurisdictionNote" value={formData.footer.jurisdictionNote} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              <input type="text" name="jurisdictionNote" value={formData.footer.jurisdictionNote} onChange={(e) => handleChange(e, "footer")} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
             </div>
           </div>
         </div>

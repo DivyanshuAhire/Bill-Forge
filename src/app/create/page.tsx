@@ -159,15 +159,15 @@ export default function CreateInvoice() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Invoice No.</label>
-            <input required type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 font-mono" />
+            <input required type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900 font-mono" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Date</label>
-            <input required type="date" value={invoiceData.dated} onChange={(e) => setInvoiceData({ ...invoiceData, dated: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+            <input required type="date" value={invoiceData.dated} onChange={(e) => setInvoiceData({ ...invoiceData, dated: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
-            <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+            <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900">
               <option value="" disabled>Select a client...</option>
               {clients.map(c => (
                 <option key={c._id} value={c._id}>{c.companyName}</option>
@@ -202,22 +202,22 @@ export default function CreateInvoice() {
                 {invoiceData.lineItems.map((item: any, index: number) => (
                   <tr key={index}>
                     <td className="px-3 py-2">
-                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2">
+                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900">
                         <option value="" disabled>Select...</option>
                         {products.map(p => <option key={p._id} value={p._id}>{p.description}</option>)}
                       </select>
                     </td>
                     <td className="px-3 py-2">
-                      <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                      <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
                     </td>
                     <td className="px-3 py-2">
-                      <input type="number" step="0.01" value={item.rate} onChange={(e) => updateLineItem(index, "rate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                      <input type="number" step="0.01" value={item.rate} onChange={(e) => updateLineItem(index, "rate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
                     </td>
                     <td className="px-3 py-2">
-                      <input type="number" step="0.1" value={item.cgstRate} onChange={(e) => updateLineItem(index, "cgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                      <input type="number" step="0.1" value={item.cgstRate} onChange={(e) => updateLineItem(index, "cgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
                     </td>
                     <td className="px-3 py-2">
-                      <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2" />
+                      <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
                     </td>
                     <td className="px-3 py-2 text-right text-sm text-gray-900 font-medium">
                       ₹{item.amount.toFixed(2)}

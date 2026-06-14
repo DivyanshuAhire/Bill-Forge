@@ -19,7 +19,10 @@ const styles = StyleSheet.create({
   smallText: { fontSize: FONT_SIZE },
   textLine: { marginBottom: 2 },
   
-  // Table Styles
+  // Table & Layout Styles
+  logo: { width: 80, height: 80, marginBottom: 8 },
+  colLogo: { width: "20%", padding: 5 },
+  colDetails: { width: "80%", padding: 5 },
   table: { width: "100%", borderTopWidth: 1, borderTopColor: "#000", borderBottomWidth: 1, borderBottomColor: "#000" },
   tableHeader: { flexDirection: "row", backgroundColor: "#f0f0f0", borderBottomWidth: 1, borderBottomColor: "#000", alignItems: "center" },
   tableRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#eee", paddingVertical: 4 },
@@ -37,16 +40,8 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
         <Text style={[styles.headerText, styles.boldText]}>TAX INVOICE</Text>
         
         <View style={styles.borderBox}>
+          {/* Invoice Number and Date on top */}
           <View style={[styles.row, styles.borderBottom]}>
-            <View style={styles.col55}>
-              <Text style={{ fontSize: FONT_SIZE, marginBottom: 4 }}>{settings?.companyName}</Text>
-              {settings?.addressLines?.map((line: string, i: number) => (
-                <Text key={i} style={styles.textLine}>{line}</Text>
-              ))}
-              <Text style={styles.textLine}><Text style={styles.boldText}>GSTIN/UIN: </Text>{settings?.gstinUin}</Text>
-              <Text style={styles.textLine}><Text style={styles.boldText}>State Name: </Text>{settings?.stateName} <Text style={styles.boldText}>Code: </Text>{settings?.stateCode}</Text>
-              <Text style={styles.textLine}><Text style={styles.boldText}>E-Mail: </Text>{settings?.email}</Text>
-            </View>
             <View style={styles.col45}>
               <View style={[styles.row, { marginBottom: 4 }]}>
                 <View style={{ width: "50%" }}>
@@ -58,11 +53,25 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
                   <Text>{new Date(data?.dated || Date.now()).toLocaleDateString()}</Text>
                 </View>
               </View>
-              {/* Optional Meta fields can go here */}
+            </View>
+          </View>
+          {/* Company Info with logo on left and details on right */}
+          <View style={styles.row}>
+            <View style={styles.colLogo}>
+              {settings?.logoUrl && <Image src={settings.logoUrl} style={styles.logo} />}
+            </View>
+            <View style={styles.colDetails}>
+              <Text style={{ fontSize: FONT_SIZE, marginBottom: 4 }}>{settings?.companyName}</Text>
+              {settings?.addressLines?.map((line: string, i: number) => (
+                <Text key={i} style={styles.textLine}>{line}</Text>
+              ))}
+              <Text style={styles.textLine}><Text style={styles.boldText}>GSTIN/UIN: </Text>{settings?.gstinUin}</Text>
+              <Text style={styles.textLine}><Text style={styles.boldText}>State Name: </Text>{settings?.stateName} <Text style={styles.boldText}>Code: </Text>{settings?.stateCode}</Text>
+              <Text style={styles.textLine}><Text style={styles.boldText}>E-Mail: </Text>{settings?.email}</Text>
             </View>
           </View>
 
-          <View style={[styles.row]}>
+          <View style={[styles.row, { borderTopWidth: 1, borderTopColor: "#000" }]}>
             <View style={styles.col50}>
               <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Consignee (Ship to)</Text>
               <Text>{data?.consignee?.companyName}</Text>
@@ -96,6 +105,18 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
               <Text style={styles.tableColRate}>{item.rate?.toFixed(2)}</Text>
               <Text style={styles.tableColPer}>{item.unit}</Text>
               <Text style={styles.tableColAmount}>{item.amount?.toFixed(2)}</Text>
+            </View>
+          ))}
+
+          {/* Insert gap rows when few items */}
+          {(data?.lineItems?.length ?? 0) <= 5 && Array.from({ length: 3 }).map((_, idx) => (
+            <View key={`gap-${idx}`} style={styles.tableRow}>
+              <Text style={styles.tableColDesc}> </Text>
+              <Text style={styles.tableColSmall}> </Text>
+              <Text style={styles.tableColSmall}> </Text>
+              <Text style={styles.tableColRate}> </Text>
+              <Text style={styles.tableColPer}> </Text>
+              <Text style={styles.tableColAmount}> </Text>
             </View>
           ))}
 
