@@ -32,9 +32,19 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    await connectToDatabase();
-    const invoice = await Invoice.create({ ...body, userId });
+    // Ensure an invoice number exists – compute it if missing
+    let invoiceNo = body.invoiceNo;
+    if (!invoiceNo) {
+      await connectToDatabase();
+      const user = await User.findById(userId);
+      const prefix = user?.invoicePrefix || "INV-";
+      const count = await Invoice.countDocuments({ userId });
+      const paddedNumber = String(count + 1).padStart(3, '0');
+      invoiceNo = `${prefix}${paddedNumber}`;
+    }
 
+    await connectToDatabase();
+    const invoice = await Invoice.create({ ...body, invoiceNo, userId });
     return NextResponse.json(invoice);
   } catch (error: any) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

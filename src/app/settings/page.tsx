@@ -73,8 +73,8 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo";
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "docs_upload_example_us_preset";
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
     setUploadingLogo(true);
     const data = new FormData();
@@ -82,6 +82,11 @@ export default function Settings() {
     data.append("upload_preset", uploadPreset);
 
     try {
+      if (!cloudName || !uploadPreset) {
+        alert('Upload failed. Ensure Cloudinary environment variables NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET are set.');
+        setUploadingLogo(false);
+        return;
+      }
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
         body: data,
