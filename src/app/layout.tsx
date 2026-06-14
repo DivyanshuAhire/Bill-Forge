@@ -47,7 +47,7 @@ export default async function RootLayout({
       <body className={`${inter.className} bg-gray-50 text-gray-900`}>
         {isAuthenticated ? (
           <div className="flex h-screen overflow-hidden">
-            <Sidebar companyName={companyName} />
+            <div className="hidden md:block"><Sidebar companyName={companyName} /></div>
             <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
               {children}
             </main>
