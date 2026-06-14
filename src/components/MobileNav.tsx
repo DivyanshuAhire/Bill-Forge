@@ -26,7 +26,7 @@ export default function MobileNav() {
     <>
       {/* Hamburger button visible on small screens */}
       <button
-        className="fixed top-2 left-2 z-50 md:hidden text-gray-600"
+        className="fixed top-4 left-8 z-50 md:hidden text-gray-600"
         onClick={() => setMenuOpen(true)}
         aria-label="Open menu"
       >
