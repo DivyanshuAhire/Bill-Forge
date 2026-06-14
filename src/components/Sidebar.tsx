@@ -28,7 +28,7 @@ export default function Sidebar({ companyName }: { companyName: string }) {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col relative">
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col relative pb-16">
       <div className="h-16 flex items-center px-6 border-b border-gray-200">
         <h1 className="text-xl font-bold text-gray-800 truncate" title={companyName}>
           {companyName}
