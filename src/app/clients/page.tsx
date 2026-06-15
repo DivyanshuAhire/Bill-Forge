@@ -77,37 +77,53 @@ export default function Clients() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GSTIN/UIN</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {clients.length === 0 ? (
+      {/* Table view for md and larger */}
+      <div className="hidden md:block">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">No clients found. Add one to get started.</td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GSTIN/UIN</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
               </tr>
-            ) : (
-              clients.map((client) => (
-                <tr key={client._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{client.companyName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{client.gstinUin || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {client.addressLines?.filter(Boolean).join(", ") || "-"}
-                  </td>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {clients.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center text-gray-500">No clients found. Add one to get started.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                clients.map((client) => (
+                  <tr key={client._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{client.companyName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{client.gstinUin || "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{client.addressLines?.filter(Boolean).join(", ") || "-"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* Card view for mobile */}
+      <div className="block md:hidden">
+        {clients.length === 0 ? (
+          <div className="px-6 py-10 text-center text-gray-500">No clients found. Add one to get started.</div>
+        ) : (
+          <div className="space-y-4">
+            {clients.map((client) => (
+              <div key={client._id} className="bg-white rounded-lg shadow p-4">
+                <h2 className="text-lg font-medium text-gray-900 mb-2">{client.companyName}</h2>
+                <p className="text-sm text-gray-600">GSTIN/UIN: {client.gstinUin || "-"}</p>
+                <p className="text-sm text-gray-600">State: {client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}</p>
+                <p className="text-sm text-gray-600">Address: {client.addressLines?.filter(Boolean).join(", ") || "-"}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {showModal && (
