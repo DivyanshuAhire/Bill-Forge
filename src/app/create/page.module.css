@@ -1,0 +1,48 @@
+.lineItemsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Adjust column widths for desktop */
+.lineItemsTable th,
+.lineItemsTable td {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  /* Hide less critical columns on mobile */
+  .lineItemsTable th:nth-child(3),
+  .lineItemsTable td:nth-child(3),
+  .lineItemsTable th:nth-child(4),
+  .lineItemsTable td:nth-child(4),
+  .lineItemsTable th:nth-child(5),
+  .lineItemsTable td:nth-child(5) {
+    display: none;
+  }
+
+  /* Make each cell a block with label */
+  .lineItemsTable td {
+    display: block;
+    width: 100%;
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .lineItemsTable td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 45%;
+    padding-left: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    color: #374151;
+  }
+
+  .lineItemsTable th {
+    display: none;
+  }
+}

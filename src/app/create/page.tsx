@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import styles from "./page.module.css";
 import * as converter from "number-to-words";
 
 export default function CreateInvoice() {
@@ -186,43 +187,43 @@ export default function CreateInvoice() {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className={"min-w-full divide-y divide-gray-200 " + styles.lineItemsTable}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Qty</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">Rate</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">CGST %</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">SGST %</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-32">Amount</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16">Qty</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Rate</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">CGST %</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">SGST %</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-24">Amount</th>
                   <th className="px-3 py-2"></th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {invoiceData.lineItems.map((item: any, index: number) => (
                   <tr key={index}>
-                    <td className="px-3 py-2">
-                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900">
+                    <td className="px-3 py-2" data-label="Product">
+                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm">
                         <option value="" disabled>Select...</option>
                         {products.map(p => <option key={p._id} value={p._id}>{p.description}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2">
-                      <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
+                    <td className="px-3 py-2" data-label="Qty">
+                      <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
                     </td>
-                    <td className="px-3 py-2">
-                      <input type="number" step="0.01" value={item.rate} onChange={(e) => updateLineItem(index, "rate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
+                    <td className="px-3 py-2" data-label="Rate">
+                      <input type="number" step="0.01" value={item.rate} onChange={(e) => updateLineItem(index, "rate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
                     </td>
-                    <td className="px-3 py-2">
-                      <input type="number" step="0.1" value={item.cgstRate} onChange={(e) => updateLineItem(index, "cgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
+                    <td className="px-3 py-2" data-label="CGST %">
+                      <input type="number" step="0.1" value={item.cgstRate} onChange={(e) => updateLineItem(index, "cgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
                     </td>
-                    <td className="px-3 py-2">
-                      <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900" />
+                    <td className="px-3 py-2" data-label="SGST %">
+                      <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
                     </td>
-                    <td className="px-3 py-2 text-right text-sm text-gray-900 font-medium">
+                    <td className="px-3 py-2 text-right text-sm text-gray-900 font-medium" data-label="Amount">
                       ₹{item.amount.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-3 py-2 text-right" data-label="Actions">
                       <button type="button" onClick={() => removeLineItem(index)} className="text-red-600 hover:text-red-800"><TrashIcon className="w-5 h-5" /></button>
                     </td>
                   </tr>

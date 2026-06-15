@@ -26,6 +26,7 @@ export default function Settings() {
       jurisdictionNote: "SUBJECT TO JURISDICTION",
       computerGeneratedNote: "This is a Computer Generated Invoice",
     },
+    templateName: "default",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -42,6 +43,7 @@ export default function Settings() {
             addressLines: data.addressLines?.length ? data.addressLines : [""],
             bankDetails: { ...prev.bankDetails, ...data.bankDetails },
             footer: { ...prev.footer, ...data.footer },
+            templateName: data.templateName || "default",
           }));
         }
         setLoading(false);
@@ -125,6 +127,17 @@ export default function Settings() {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Company Settings</h1>
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         
+        {/* PDF Template Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">PDF Template</label>
+            <select name="templateName" value={formData.templateName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900">
+              <option value="default">Default</option>
+              <option value="simple">Simple template</option>
+            </select>
+          </div>
+        </div>
+
         {/* Basic Info */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">Basic Information</h2>

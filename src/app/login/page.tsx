@@ -59,10 +59,10 @@ export default function Login() {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="+1 (555) 000-0000"
+            placeholder="+91 XXXXX XXXXX"
           />
         </div>
-        
+
         <button
           type="submit"
           disabled={loading || !phoneNumber}
