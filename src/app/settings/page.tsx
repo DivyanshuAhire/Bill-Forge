@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 
 export default function Settings() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     phoneNumber: "",
     photoUrl: "",
     upiId: "",
     bankLogoUrl: "",
+    addressLines: [""],
+    bankDetails: {},
+    footer: {},
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
