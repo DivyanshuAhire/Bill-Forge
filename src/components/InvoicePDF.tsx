@@ -37,7 +37,7 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={[styles.headerText, styles.boldText]}>TAX INVOICE</Text>
+        <Text style={[styles.headerText, styles.boldText]}>{settings?.templateName === "simple" ? "INVOICE" : "TAX INVOICE"}</Text>
         
         <View style={styles.borderBox}>
           {/* Invoice Number and Date on top */}
@@ -61,29 +61,52 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
               {settings?.logoUrl && <Image src={settings.logoUrl} style={styles.logo} />}
             </View>
             <View style={styles.colDetails}>
-              <Text style={{ fontSize: FONT_SIZE, marginBottom: 4 }}>{settings?.companyName}</Text>
-              {settings?.addressLines?.map((line: string, i: number) => (
-                <Text key={i} style={styles.textLine}>{line}</Text>
-              ))}
-              <Text style={styles.textLine}><Text style={styles.boldText}>GSTIN/UIN: </Text>{settings?.gstinUin}</Text>
-              <Text style={styles.textLine}><Text style={styles.boldText}>State Name: </Text>{settings?.stateName} <Text style={styles.boldText}>Code: </Text>{settings?.stateCode}</Text>
-              <Text style={styles.textLine}><Text style={styles.boldText}>E-Mail: </Text>{settings?.email}</Text>
+              {settings?.companyName && <Text style={{ fontSize: FONT_SIZE, marginBottom: 4 }}>{settings?.companyName}</Text>}
+              {settings?.templateName === "simple" ? (
+                <>
+                  {settings?.phoneNumber && <Text style={styles.textLine}>Phone: {settings?.phoneNumber}</Text>}
+                </>
+              ) : (
+                <>
+                  {settings?.addressLines?.map((line: string, i: number) => (
+                    <Text key={i} style={styles.textLine}>{line}</Text>
+                  ))}
+                  <Text style={styles.textLine}><Text style={styles.boldText}>GSTIN/UIN: </Text>{settings?.gstinUin}</Text>
+                  <Text style={styles.textLine}><Text style={styles.boldText}>State Name: </Text>{settings?.stateName} <Text style={styles.boldText}>Code: </Text>{settings?.stateCode}</Text>
+                  <Text style={styles.textLine}><Text style={styles.boldText}>E-Mail: </Text>{settings?.email}</Text>
+                </>
+              )}
             </View>
           </View>
 
           <View style={[styles.row, { borderTopWidth: 1, borderTopColor: "#000" }]}>
-            <View style={styles.col50}>
-              <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Consignee (Ship to)</Text>
-              <Text>{data?.consignee?.companyName}</Text>
-              <Text style={styles.textLine}>GSTIN/UIN: {data?.consignee?.gstinUin}</Text>
-              <Text style={styles.textLine}>State: {data?.consignee?.stateName} ({data?.consignee?.stateCode})</Text>
-            </View>
-            <View style={[styles.col50, { borderLeftWidth: 1, borderLeftColor: "#000" }]}>
-              <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Buyer (Bill to)</Text>
-              <Text>{data?.buyer?.companyName}</Text>
-              <Text style={styles.textLine}>GSTIN/UIN: {data?.buyer?.gstinUin}</Text>
-              <Text style={styles.textLine}>State: {data?.buyer?.stateName} ({data?.buyer?.stateCode})</Text>
-            </View>
+            {settings?.templateName === "simple" ? (
+              <>
+                <View style={styles.col50}>
+                  <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Consignee (Ship to)</Text>
+                  <Text>{data?.consignee?.companyName}</Text>
+                </View>
+                <View style={[styles.col50, { borderLeftWidth: 1, borderLeftColor: "#000" }]}>
+                  <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Buyer (Bill to)</Text>
+                  <Text>{data?.buyer?.companyName}</Text>
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.col50}>
+                  <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Consignee (Ship to)</Text>
+                  <Text>{data?.consignee?.companyName}</Text>
+                  <Text style={styles.textLine}>GSTIN/UIN: {data?.consignee?.gstinUin}</Text>
+                  <Text style={styles.textLine}>State: {data?.consignee?.stateName} ({data?.consignee?.stateCode})</Text>
+                </View>
+                <View style={[styles.col50, { borderLeftWidth: 1, borderLeftColor: "#000" }]}>
+                  <Text style={[styles.smallText, styles.boldText, { marginBottom: 2 }]}>Buyer (Bill to)</Text>
+                  <Text>{data?.buyer?.companyName}</Text>
+                  <Text style={styles.textLine}>GSTIN/UIN: {data?.buyer?.gstinUin}</Text>
+                  <Text style={styles.textLine}>State: {data?.buyer?.stateName} ({data?.buyer?.stateCode})</Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
@@ -159,10 +182,20 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
               <Text style={{ fontSize: FONT_SIZE }}>{settings?.footer?.declaration}</Text>
             </View>
             <View style={styles.col45}>
-              <Text style={[styles.smallText, { marginBottom: 4 }]}>Company's Bank Details</Text>
-              <Text style={styles.textLine}>Bank Name: {settings?.bankDetails?.bankName}</Text>
-              <Text style={styles.textLine}>A/c No.: {settings?.bankDetails?.accountNo}</Text>
-              <Text style={styles.textLine}>Branch & IFS Code: {settings?.bankDetails?.branch} | {settings?.bankDetails?.ifscCode}</Text>
+              {settings?.templateName === "simple" ? (
+                <>
+                  {settings?.photoUrl && <Image src={settings.photoUrl} style={styles.logo} />}
+                  <Text style={styles.textLine}>UPI ID: {settings?.upiId}</Text>
+                </>
+              ) : (
+                <>
+                  {settings?.bankLogoUrl && <Image src={settings.bankLogoUrl} style={styles.logo} />}
+                  <Text style={[styles.smallText, { marginBottom: 4 }]}>Company's Bank Details</Text>
+                  <Text style={styles.textLine}>Bank Name: {settings?.bankDetails?.bankName}</Text>
+                  <Text style={styles.textLine}>A/c No.: {settings?.bankDetails?.accountNo}</Text>
+                  <Text style={styles.textLine}>Branch & IFS Code: {settings?.bankDetails?.branch} | {settings?.bankDetails?.ifscCode}</Text>
+                </>
+              )}
               
               <View style={{ marginTop: 20, alignItems: "flex-end" }}>
                 <Text style={[styles.boldText, { marginBottom: 20 }]}>for {settings?.companyName}</Text>

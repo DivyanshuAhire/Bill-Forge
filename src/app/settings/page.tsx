@@ -4,33 +4,15 @@ import { useState, useEffect } from "react";
 
 export default function Settings() {
   const [formData, setFormData] = useState({
-    companyName: "",
-    invoicePrefix: "INV-",
-    logoUrl: "",
-    addressLines: [""],
-    gstinUin: "",
-    stateName: "",
-    stateCode: "",
-    email: "",
-    bankDetails: {
-      bankName: "",
-      accountNo: "",
-      branch: "",
-      ifscCode: "",
-    },
-    footer: {
-      declaration: "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.",
-      eoAndE: "E. & O.E",
-      signatoryLabel: "",
-      signatoryTitle: "Authorised Signatory",
-      jurisdictionNote: "SUBJECT TO JURISDICTION",
-      computerGeneratedNote: "This is a Computer Generated Invoice",
-    },
-    templateName: "default",
+    phoneNumber: "",
+    photoUrl: "",
+    upiId: "",
+    bankLogoUrl: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBankLogo, setUploadingBankLogo] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -61,6 +43,32 @@ export default function Settings() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (field === "logoUrl") setUploadingLogo(true);
+    else setUploadingBankLogo(true);
+
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "unsigned_upload");
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: data,
+      });
+      const json = await res.json();
+      setFormData((prev) => ({ ...prev, [field]: json.secure_url }));
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      if (field === "logoUrl") setUploadingLogo(false);
+      else setUploadingBankLogo(false);
+    }
+  };
+
   const handleAddressChange = (index: number, value: string) => {
     const newAddress = [...formData.addressLines];
     newAddress[index] = value;
@@ -71,42 +79,7 @@ export default function Settings() {
     setFormData({ ...formData, addressLines: [...formData.addressLines, ""] });
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    setUploadingLogo(true);
-    const data = new FormData();
-    data.append("file", file);
-    if (uploadPreset) {
-      data.append("upload_preset", uploadPreset);
-    }
-
-    try {
-      if (!cloudName || !uploadPreset) {
-        alert('Upload failed. Ensure Cloudinary environment variables NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET are set.');
-        setUploadingLogo(false);
-        return;
-      }
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: "POST",
-        body: data,
-      });
-      const fileData = await res.json();
-      if (fileData.secure_url) {
-        setFormData((prev) => ({ ...prev, logoUrl: fileData.secure_url }));
-      } else {
-        alert("Upload failed. Make sure Cloudinary env variables are set.");
-      }
-    } catch (err) {
-      alert("Upload failed.");
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,9 +130,20 @@ export default function Settings() {
                   <img src={formData.logoUrl} alt="Logo" className="h-10 w-auto object-contain border rounded" />
                 )}
                 <div className="flex-1">
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} disabled={uploadingLogo} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                  <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "logoUrl")} disabled={uploadingLogo} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                 </div>
                 {uploadingLogo && <span className="text-sm text-blue-600">Uploading...</span>}
+              </div>
+            </div>
+              {/* Bank Logo Upload */}
+              <div className="flex items-center gap-3 mb-4">
+                {formData.bankLogoUrl && (
+                  <img src={formData.bankLogoUrl} alt="Bank Logo" className="h-10 w-auto object-contain border rounded" />
+                )}
+                <div className="flex-1">
+                  <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "bankLogoUrl")} disabled={uploadingBankLogo} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                </div>
+                {uploadingBankLogo && <span className="text-sm text-blue-600">Uploading...</span>}
               </div>
             </div>
             <div>
@@ -186,7 +170,7 @@ export default function Settings() {
             ))}
             <button type="button" onClick={addAddressLine} className="text-sm text-blue-600 hover:text-blue-800">+ Add Address Line</button>
           </div>
-        </div>
+        
 
         {/* Bank Details */}
         <div className="space-y-4">

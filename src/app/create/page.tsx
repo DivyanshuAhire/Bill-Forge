@@ -10,6 +10,7 @@ import * as converter from "number-to-words";
 export default function CreateInvoice() {
   const [settings, setSettings] = useState<any>({});
   const [clients, setClients] = useState<any[]>([]);
+  const [filteredClients, setFilteredClients] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
   const [invoiceData, setInvoiceData] = useState<any>({
@@ -26,7 +27,10 @@ export default function CreateInvoice() {
 
   useEffect(() => {
     fetch("/api/settings").then(r => r.json()).then(setSettings);
-    fetch("/api/clients").then(r => r.json()).then(setClients);
+    fetch("/api/clients").then(r => r.json()).then(data => {
+      setClients(data);
+      setFilteredClients(data);
+    });
     fetch("/api/products").then(r => r.json()).then(setProducts);
     fetch("/api/invoices/next").then(r => r.json()).then(data => {
       if (data.nextInvoiceNo) {
@@ -138,11 +142,18 @@ export default function CreateInvoice() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await fetch("/api/invoices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(invoiceData),
-    });
+    if (settings?.templateName === "simple" && invoiceData.simpleName) {
+        await fetch("/api/clients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ companyName: invoiceData.simpleName })
+        });
+      }
+await fetch("/api/invoices", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(invoiceData)
+});
     await generatePDF();
     setSaving(false);
     window.location.href = "/";
@@ -156,26 +167,55 @@ export default function CreateInvoice() {
 
       <form onSubmit={handleSave} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-8">
         
-        {/* Meta Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Invoice No.</label>
-            <input required type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900 font-mono" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Date</label>
-            <input required type="date" value={invoiceData.dated} onChange={(e) => setInvoiceData({ ...invoiceData, dated: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
-            <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900">
-              <option value="" disabled>Select a client...</option>
-              {clients.map(c => (
-                <option key={c._id} value={c._id}>{c.companyName}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        {/* Template-specific fields */}
+          {settings?.templateName === "simple" ? (
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  name="simpleName"
+                  value={invoiceData.simpleName || ""}
+                  onChange={(e) => setInvoiceData({ ...invoiceData, simpleName: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
+                  required
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Existing meta info fields */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Invoice No.</label>
+                  <input required type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900 font-mono" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date</label>
+                  <input required type="date" value={invoiceData.dated} onChange={(e) => setInvoiceData({ ...invoiceData, dated: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
+                  <input
+                    type="text"
+                    placeholder="Search client..."
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900 mb-2"
+                    onChange={(e) => {
+                      const term = e.target.value.toLowerCase();
+                      const filtered = clients.filter(c => c.companyName.toLowerCase().includes(term));
+                      setFilteredClients(filtered);
+                    }}
+                  />
+                  <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900">
+                    <option value="" disabled>Select a client...</option>
+                    {filteredClients.map(c => (
+                      <option key={c._id} value={c._id}>{c.companyName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
 
         {/* Line Items */}
         <div>

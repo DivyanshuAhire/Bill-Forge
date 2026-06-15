@@ -5,11 +5,13 @@ export interface IUser extends Document {
   invoicePrefix?: string;
   companyName?: string;
   logoUrl?: string;
+  bankLogoUrl?: string; // New field for bank details image
   addressLines?: string[];
   gstinUin?: string;
   stateName?: string;
   stateCode?: string;
   email?: string;
+  templateName?: string; // PDF template selection
   bankDetails?: {
     bankName?: string;
     accountNo?: string;
@@ -32,16 +34,18 @@ const UserSchema: Schema = new Schema(
     invoicePrefix: { type: String, default: "INV-" },
     companyName: { type: String },
     logoUrl: { type: String },
+    bankLogoUrl: { type: String },
     addressLines: { type: [String] },
     gstinUin: { type: String },
     stateName: { type: String },
     stateCode: { type: String },
     email: { type: String },
+    templateName: { type: String, default: "default" },
     bankDetails: {
       bankName: { type: String },
       accountNo: { type: String },
       branch: { type: String },
-      ifscCode: { type: String },
+      ifscCode: { type: String }
     },
     footer: {
       declaration: { type: String },
@@ -49,8 +53,8 @@ const UserSchema: Schema = new Schema(
       signatoryLabel: { type: String },
       signatoryTitle: { type: String },
       jurisdictionNote: { type: String },
-      computerGeneratedNote: { type: String },
-    },
+      computerGeneratedNote: { type: String }
+    }
   },
   { timestamps: true }
 );
