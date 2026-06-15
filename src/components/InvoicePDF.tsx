@@ -184,12 +184,11 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
             <View style={styles.col45}>
               {settings?.templateName === "simple" ? (
                 <>
-                  {settings?.bankLogoUrl && <Image src={settings.bankLogoUrl} style={styles.logo} />}
+                  {/* No bank logo for simple template */}
                   <Text style={styles.textLine}>UPI ID: {settings?.upiId}</Text>
                 </>
               ) : (
                 <>
-                  {settings?.bankLogoUrl && <Image src={settings.bankLogoUrl} style={styles.logo} />}
                   <Text style={[styles.smallText, { marginBottom: 4 }]}>Company's Bank Details</Text>
                   <Text style={styles.textLine}>Bank Name: {settings?.bankDetails?.bankName}</Text>
                   <Text style={styles.textLine}>A/c No.: {settings?.bankDetails?.accountNo}</Text>
