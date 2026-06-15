@@ -58,7 +58,7 @@ export default function Login() {
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-black placeholder:text-black focus:ring-blue-500 focus:border-blue-500"
             placeholder="+91 XXXXX XXXXX"
           />
         </div>

@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Override gray text colors to black for better readability */
+.text-gray-700, .text-gray-500, .text-gray-400 { color: #000 !important; }
+/* Ensure form fields use black text for user input */
+input, textarea, select { color: #000 !important; }
+input::placeholder, textarea::placeholder, input::-webkit-input-placeholder, textarea::-webkit-input-placeholder, input::-moz-placeholder, textarea::-moz-placeholder {
+  color: #000 !important;
+  opacity: 1;
+}
+/* Ensure autofill text stays black */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
