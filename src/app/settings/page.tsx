@@ -22,7 +22,7 @@ export default function Settings() {
       .then((res) => res.json())
       .then((data) => {
         if (data && !data.error) {
-          setFormData((prev) => ({
+          setFormData((prev: any) => ({
             ...prev,
             ...data,
             addressLines: data.addressLines?.length ? data.addressLines : [""],
@@ -35,14 +35,14 @@ export default function Settings() {
       });
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, section?: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, section?: string) => {
     const { name, value } = e.target;
     if (section === "bankDetails") {
-      setFormData((prev) => ({ ...prev, bankDetails: { ...prev.bankDetails, [name]: value } }));
+      setFormData((prev: any) => ({ ...prev, bankDetails: { ...prev.bankDetails, [name]: value } }));
     } else if (section === "footer") {
-      setFormData((prev) => ({ ...prev, footer: { ...prev.footer, [name]: value } }));
+      setFormData((prev: any) => ({ ...prev, footer: { ...prev.footer, [name]: value } }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev: any) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -63,7 +63,7 @@ export default function Settings() {
         body: data,
       });
       const json = await res.json();
-      setFormData((prev) => ({ ...prev, [field]: json.secure_url }));
+      setFormData((prev: any) => ({ ...prev, [field]: json.secure_url }));
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -168,7 +168,7 @@ export default function Settings() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-            {formData.addressLines.map((line, idx) => (
+            {formData.addressLines.map((line: string, idx: number) => (
               <input key={idx} type="text" value={line} onChange={(e) => handleAddressChange(idx, e.target.value)} className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder={`Address Line ${idx + 1}`} />
             ))}
             <button type="button" onClick={addAddressLine} className="text-sm text-blue-600 hover:text-blue-800">+ Add Address Line</button>
