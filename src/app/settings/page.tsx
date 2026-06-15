@@ -102,7 +102,7 @@ export default function Settings() {
     <div className="max-w-4xl mx-auto pb-12">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Company Settings</h1>
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        
+
         {/* PDF Template Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -127,6 +127,10 @@ export default function Settings() {
               <input type="text" name="invoicePrefix" value={formData.invoicePrefix} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" placeholder="e.g. INV-" />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700">UPI ID</label>
+              <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" placeholder="e.g. username@bank" />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
               <div className="flex items-center gap-3">
                 {formData.logoUrl && (
@@ -138,42 +142,42 @@ export default function Settings() {
                 {uploadingLogo && <span className="text-sm text-blue-600">Uploading...</span>}
               </div>
             </div>
-              {/* Bank Logo Upload */}
-              <div className="flex items-center gap-3 mb-4">
-                {formData.bankLogoUrl && (
-                  <img src={formData.bankLogoUrl} alt="Bank Logo" className="h-10 w-auto object-contain border rounded" />
-                )}
-                <div className="flex-1">
-                  <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "bankLogoUrl")} disabled={uploadingBankLogo} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                </div>
-                {uploadingBankLogo && <span className="text-sm text-blue-600">Uploading...</span>}
+            {/* Bank Logo Upload */}
+            <div className="flex items-center gap-3 mb-4">
+              {formData.bankLogoUrl && (
+                <img src={formData.bankLogoUrl} alt="Bank Logo" className="h-10 w-auto object-contain border rounded" />
+              )}
+              <div className="flex-1">
+                <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "bankLogoUrl")} disabled={uploadingBankLogo} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">GSTIN / UIN</label>
-              <input type="text" name="gstinUin" value={formData.gstinUin} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">State Name</label>
-              <input type="text" name="stateName" value={formData.stateName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">State Code</label>
-              <input type="text" name="stateCode" value={formData.stateCode} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
+              {uploadingBankLogo && <span className="text-sm text-blue-600">Uploading...</span>}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-            {formData.addressLines.map((line: string, idx: number) => (
-              <input key={idx} type="text" value={line} onChange={(e) => handleAddressChange(idx, e.target.value)} className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder={`Address Line ${idx + 1}`} />
-            ))}
-            <button type="button" onClick={addAddressLine} className="text-sm text-blue-600 hover:text-blue-800">+ Add Address Line</button>
+            <label className="block text-sm font-medium text-gray-700">GSTIN / UIN</label>
+            <input type="text" name="gstinUin" value={formData.gstinUin} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
           </div>
-        
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">State Name</label>
+            <input type="text" name="stateName" value={formData.stateName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">State Code</label>
+            <input type="text" name="stateCode" value={formData.stateCode} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900" />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          {formData.addressLines.map((line: string, idx: number) => (
+            <input key={idx} type="text" value={line} onChange={(e) => handleAddressChange(idx, e.target.value)} className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder={`Address Line ${idx + 1}`} />
+          ))}
+          <button type="button" onClick={addAddressLine} className="text-sm text-blue-600 hover:text-blue-800">+ Add Address Line</button>
+        </div>
+
 
         {/* Bank Details */}
         <div className="space-y-4">
