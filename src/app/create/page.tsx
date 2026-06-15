@@ -5,6 +5,7 @@ import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import styles from "./page.module.css";
+import { AutocompleteInput } from "@/components/AutocompleteInput";
 import * as converter from "number-to-words";
 
 export default function CreateInvoice() {
@@ -182,13 +183,9 @@ await fetch("/api/invoices", {
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Customer Name</label>
-                <input
-                  list="clients-list"
-                  type="text"
-                  name="simpleName"
+                <AutocompleteInput
                   value={invoiceData.simpleName || ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                  onChange={(val) => {
                     const existing = clients.find(c => c.companyName === val);
                     setInvoiceData({ 
                       ...invoiceData, 
@@ -198,13 +195,11 @@ await fetch("/api/invoices", {
                       consignee: existing || { companyName: val }
                     });
                   }}
+                  options={clients.map(c => c.companyName)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
                   placeholder="Search existing customer or enter new..."
                   required
                 />
-                <datalist id="clients-list">
-                  {clients.map(c => <option key={c._id} value={c.companyName} />)}
-                </datalist>
               </div>
             </div>
           ) : (
@@ -221,13 +216,9 @@ await fetch("/api/invoices", {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
-                  <input
-                    list="default-clients-list"
-                    type="text"
-                    required
+                  <AutocompleteInput
                     value={invoiceData.buyer?.companyName || ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                    onChange={(val) => {
                       const existing = clients.find(c => c.companyName === val);
                       if (existing) {
                         setInvoiceData({ ...invoiceData, buyerId: existing._id, buyer: existing, consignee: existing });
@@ -235,12 +226,11 @@ await fetch("/api/invoices", {
                         setInvoiceData({ ...invoiceData, buyerId: "", buyer: { companyName: val }, consignee: { companyName: val } });
                       }
                     }}
+                    options={clients.map(c => c.companyName)}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
                     placeholder="Search and select existing customer..."
+                    required
                   />
-                  <datalist id="default-clients-list">
-                    {clients.map(c => <option key={c._id} value={c.companyName} />)}
-                  </datalist>
                 </div>
               </div>
             </>
@@ -255,7 +245,7 @@ await fetch("/api/invoices", {
             </button>
           </div>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto pb-48">
             <table className={"min-w-full divide-y divide-gray-200 " + styles.lineItemsTable}>
               <thead className="bg-gray-50">
                 <tr>
@@ -272,16 +262,13 @@ await fetch("/api/invoices", {
                 {invoiceData.lineItems.map((item: any, index: number) => (
                   <tr key={index}>
                     <td className="px-3 py-2" data-label="Product">
-                      <input 
-                        list={`products-list-${index}`}
+                      <AutocompleteInput 
                         value={item.description || ''} 
-                        onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                        onChange={(val) => updateLineItem(index, "description", val)}
+                        options={products.map((p: any) => p.description)}
                         placeholder="Search or enter product..."
                         className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" 
                       />
-                      <datalist id={`products-list-${index}`}>
-                        {products.map(p => <option key={p._id} value={p.description} />)}
-                      </datalist>
                     </td>
                     <td className="px-3 py-2" data-label="Qty">
                       <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />

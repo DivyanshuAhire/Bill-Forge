@@ -12,8 +12,6 @@
 
 @media (max-width: 640px) {
   /* Hide less critical columns on mobile */
-  .lineItemsTable th:nth-child(3),
-  .lineItemsTable td:nth-child(3),
   .lineItemsTable th:nth-child(4),
   .lineItemsTable td:nth-child(4),
   .lineItemsTable th:nth-child(5),
