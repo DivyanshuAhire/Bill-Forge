@@ -6,6 +6,8 @@ export interface IUser extends Document {
   companyName?: string;
   logoUrl?: string;
   bankLogoUrl?: string; // New field for bank details image
+  photoUrl?: string;
+  upiId?: string;
   addressLines?: string[];
   gstinUin?: string;
   stateName?: string;
@@ -35,6 +37,8 @@ const UserSchema: Schema = new Schema(
     companyName: { type: String },
     logoUrl: { type: String },
     bankLogoUrl: { type: String },
+    photoUrl: { type: String },
+    upiId: { type: String },
     addressLines: { type: [String] },
     gstinUin: { type: String },
     stateName: { type: String },
@@ -59,4 +63,5 @@ const UserSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+delete mongoose.models.User;
+export const User: Model<IUser> = mongoose.model<IUser>("User", UserSchema);

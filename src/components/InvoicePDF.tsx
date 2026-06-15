@@ -184,7 +184,7 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
             <View style={styles.col45}>
               {settings?.templateName === "simple" ? (
                 <>
-                  {settings?.photoUrl && <Image src={settings.photoUrl} style={styles.logo} />}
+                  {settings?.bankLogoUrl && <Image src={settings.bankLogoUrl} style={styles.logo} />}
                   <Text style={styles.textLine}>UPI ID: {settings?.upiId}</Text>
                 </>
               ) : (

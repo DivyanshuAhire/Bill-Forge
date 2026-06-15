@@ -25,7 +25,14 @@ export async function GET(req: NextRequest) {
     // Pad the number (e.g. 1 -> "001")
     const paddedNumber = String(count + 1).padStart(3, '0');
     
-    const nextInvoiceNo = `${prefix}${paddedNumber}`;
+    const date = new Date();
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    const dateStr = `${dd}${mm}${yy}`;
+    
+    const cleanPrefix = prefix.replace(/[-\/]+$/, "");
+    const nextInvoiceNo = `${cleanPrefix}/${dateStr}/${paddedNumber}`;
 
     return NextResponse.json({ nextInvoiceNo });
   } catch (error: any) {

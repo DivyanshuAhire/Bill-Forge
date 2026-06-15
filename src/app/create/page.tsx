@@ -63,6 +63,14 @@ export default function CreateInvoice() {
       if (product) {
         newItems[index] = { ...newItems[index], productId: value, description: product.description, hsnSac: product.hsnSac, unit: product.unit, rate: product.rate, cgstRate: product.cgstRate, sgstRate: product.sgstRate };
       }
+    } else if (field === "description") {
+      const product = products.find(p => p.description === value);
+      if (product) {
+        newItems[index] = { ...newItems[index], productId: product._id, description: product.description, hsnSac: product.hsnSac, unit: product.unit, rate: product.rate, cgstRate: product.cgstRate, sgstRate: product.sgstRate };
+      } else {
+        newItems[index].description = value;
+        newItems[index].productId = "";
+      }
     } else {
       newItems[index][field] = value;
     }
@@ -142,12 +150,14 @@ export default function CreateInvoice() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    if (settings?.templateName === "simple" && invoiceData.simpleName) {
-        await fetch("/api/clients", {
+    if (settings?.templateName === "simple" && invoiceData.simpleName && !invoiceData.buyerId) {
+        const res = await fetch("/api/clients", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ companyName: invoiceData.simpleName })
         });
+        const newClient = await res.json();
+        invoiceData.buyerId = newClient._id;
       }
 await fetch("/api/invoices", {
   method: "POST",
@@ -171,15 +181,30 @@ await fetch("/api/invoices", {
           {settings?.templateName === "simple" ? (
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <label className="block text-sm font-medium text-gray-700">Customer Name</label>
                 <input
+                  list="clients-list"
                   type="text"
                   name="simpleName"
                   value={invoiceData.simpleName || ""}
-                  onChange={(e) => setInvoiceData({ ...invoiceData, simpleName: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const existing = clients.find(c => c.companyName === val);
+                    setInvoiceData({ 
+                      ...invoiceData, 
+                      simpleName: val,
+                      buyerId: existing ? existing._id : "",
+                      buyer: existing || { companyName: val },
+                      consignee: existing || { companyName: val }
+                    });
+                  }}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
+                  placeholder="Search existing customer or enter new..."
                   required
                 />
+                <datalist id="clients-list">
+                  {clients.map(c => <option key={c._id} value={c.companyName} />)}
+                </datalist>
               </div>
             </div>
           ) : (
@@ -197,21 +222,25 @@ await fetch("/api/invoices", {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Select Client (Buyer)</label>
                   <input
+                    list="default-clients-list"
                     type="text"
-                    placeholder="Search client..."
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900 mb-2"
+                    required
+                    value={invoiceData.buyer?.companyName || ""}
                     onChange={(e) => {
-                      const term = e.target.value.toLowerCase();
-                      const filtered = clients.filter(c => c.companyName.toLowerCase().includes(term));
-                      setFilteredClients(filtered);
+                      const val = e.target.value;
+                      const existing = clients.find(c => c.companyName === val);
+                      if (existing) {
+                        setInvoiceData({ ...invoiceData, buyerId: existing._id, buyer: existing, consignee: existing });
+                      } else {
+                        setInvoiceData({ ...invoiceData, buyerId: "", buyer: { companyName: val }, consignee: { companyName: val } });
+                      }
                     }}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
+                    placeholder="Search and select existing customer..."
                   />
-                  <select required value={invoiceData.buyerId} onChange={handleBuyerChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900">
-                    <option value="" disabled>Select a client...</option>
-                    {filteredClients.map(c => (
-                      <option key={c._id} value={c._id}>{c.companyName}</option>
-                    ))}
-                  </select>
+                  <datalist id="default-clients-list">
+                    {clients.map(c => <option key={c._id} value={c.companyName} />)}
+                  </datalist>
                 </div>
               </div>
             </>
@@ -221,8 +250,8 @@ await fetch("/api/invoices", {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-700">Line Items</h2>
-            <button type="button" onClick={addLineItem} className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-800">
-              <PlusIcon className="w-4 h-4" /> Add Item
+            <button type="button" onClick={addLineItem} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium flex items-center gap-2 shadow-sm transition-colors">
+              <PlusIcon className="w-5 h-5" /> Add Item
             </button>
           </div>
           
@@ -243,10 +272,16 @@ await fetch("/api/invoices", {
                 {invoiceData.lineItems.map((item: any, index: number) => (
                   <tr key={index}>
                     <td className="px-3 py-2" data-label="Product">
-                      <select value={item.productId} onChange={(e) => updateLineItem(index, "productId", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm">
-                        <option value="" disabled>Select...</option>
-                        {products.map(p => <option key={p._id} value={p._id}>{p.description}</option>)}
-                      </select>
+                      <input 
+                        list={`products-list-${index}`}
+                        value={item.description || ''} 
+                        onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                        placeholder="Search or enter product..."
+                        className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" 
+                      />
+                      <datalist id={`products-list-${index}`}>
+                        {products.map(p => <option key={p._id} value={p.description} />)}
+                      </datalist>
                     </td>
                     <td className="px-3 py-2" data-label="Qty">
                       <input type="number" min="0.01" step="0.01" required value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
