@@ -101,7 +101,7 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Company Settings</h1>
-      <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <form onSubmit={handleSubmit} className="space-y-8 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200">
 
         {/* PDF Template Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

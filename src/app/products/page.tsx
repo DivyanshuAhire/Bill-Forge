@@ -111,7 +111,7 @@ export default function Products() {
                 <label className="block text-sm font-medium text-gray-700">Description / Name</label>
                 <input required type="text" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">HSN/SAC</label>
                   <input type="text" value={formData.hsnSac} onChange={(e) => setFormData({ ...formData, hsnSac: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
@@ -125,7 +125,7 @@ export default function Products() {
                 <label className="block text-sm font-medium text-gray-700">Rate per Unit</label>
                 <input type="number" step="0.01" required value={formData.rate} onChange={(e) => setFormData({ ...formData, rate: parseFloat(e.target.value) || 0 })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">CGST Rate (%)</label>
                   <input type="number" step="0.1" value={formData.cgstRate} onChange={(e) => setFormData({ ...formData, cgstRate: parseFloat(e.target.value) || 0 })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />

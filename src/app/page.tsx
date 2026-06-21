@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DocumentPlusIcon, DocumentIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { DocumentPlusIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { pdf } from "@react-pdf/renderer";
+import { InvoicePDF } from "@/components/InvoicePDF";
 
 export default function Home() {
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -16,14 +20,41 @@ export default function Home() {
     setLoading(false);
   };
 
+  const fetchSettings = async () => {
+    const res = await fetch("/api/settings");
+    const data = await res.json();
+    setSettings(data);
+  };
+
   useEffect(() => {
     fetchInvoices();
+    fetchSettings();
   }, []);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this invoice?")) {
       await fetch(`/api/invoices?id=${id}`, { method: "DELETE" });
       fetchInvoices();
+    }
+  };
+
+  const handleDownload = async (invoice: any) => {
+    try {
+      setDownloadingId(invoice._id);
+      const blob = await pdf(<InvoicePDF data={invoice} settings={settings} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice_${invoice.invoiceNo}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF");
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -71,6 +102,9 @@ export default function Home() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.buyer?.companyName || "N/A"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onClick={() => handleDownload(invoice)} disabled={downloadingId === invoice._id} className="text-blue-600 hover:text-blue-900 disabled:opacity-50" title="Download Invoice">
+                          <ArrowDownTrayIcon className="w-5 h-5" />
+                        </button>
                         <button onClick={() => handleDelete(invoice._id)} className="text-red-600 hover:text-red-900 ml-4" title="Delete Invoice">
                           <TrashIcon className="w-5 h-5" />
                         </button>
@@ -96,9 +130,14 @@ export default function Home() {
                   <div key={invoice._id} className="bg-white rounded-lg shadow p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h2 className="text-lg font-medium text-gray-900">{invoice.invoiceNo}</h2>
-                      <button onClick={() => handleDelete(invoice._id)} className="text-red-600 hover:text-red-900" title="Delete Invoice">
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
+                      <div className="flex gap-4">
+                        <button onClick={() => handleDownload(invoice)} disabled={downloadingId === invoice._id} className="text-blue-600 hover:text-blue-900 disabled:opacity-50" title="Download Invoice">
+                          <ArrowDownTrayIcon className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleDelete(invoice._id)} className="text-red-600 hover:text-red-900" title="Delete Invoice">
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                     <p className="text-sm text-gray-600">Date: {new Date(invoice.dated).toLocaleDateString()}</p>
                     <p className="text-sm text-gray-600">Client: {invoice.buyer?.companyName || "N/A"}</p>

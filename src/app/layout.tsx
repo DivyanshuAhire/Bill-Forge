@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   description: "A simple and professional bill generator.",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{

@@ -139,7 +139,7 @@ export default function Clients() {
                 <label className="block text-sm font-medium text-gray-700">GSTIN/UIN</label>
                 <input type="text" value={formData.gstinUin} onChange={(e) => setFormData({ ...formData, gstinUin: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">State Name</label>
                   <input type="text" value={formData.stateName} onChange={(e) => setFormData({ ...formData, stateName: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
