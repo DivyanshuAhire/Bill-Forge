@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DocumentPlusIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { DocumentPlusIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/InvoicePDF";
 
@@ -11,6 +11,7 @@ export default function Home() {
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -58,6 +59,42 @@ export default function Home() {
     }
   };
 
+  const handleShare = async (invoice: any) => {
+    try {
+      setSharingId(invoice._id);
+      const blob = await pdf(<InvoicePDF data={invoice} settings={settings} />).toBlob();
+
+      const file = new File([blob], `Invoice_${invoice.invoiceNo}.pdf`, { type: "application/pdf" });
+
+      // Prefer Web Share API with files (supported on modern Android browsers)
+      // Fallback to simple download if not available
+      // @ts-ignore navigator.canShare may not be in TS lib
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Invoice ${invoice.invoiceNo}`, text: `Invoice ${invoice.invoiceNo}` });
+      } else if (navigator.share) {
+        // Older share API without file support: fall back to sharing a short text and suggest download
+        await navigator.share({ title: `Invoice ${invoice.invoiceNo}`, text: `Invoice ${invoice.invoiceNo}. Please download the PDF from the app.` });
+        alert("If you need the PDF file, please use the Download button to save it to your device.");
+      } else {
+        // Fallback: trigger download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Invoice_${invoice.invoiceNo}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Your browser does not support direct sharing; the invoice was downloaded instead.");
+      }
+    } catch (error) {
+      console.error("Error sharing PDF:", error);
+      alert("Failed to share invoice");
+    } finally {
+      setSharingId(null);
+    }
+  };
+
   if (loading) return <div>Loading invoices...</div>;
 
   return (
@@ -102,6 +139,9 @@ export default function Home() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.buyer?.companyName || "N/A"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onClick={() => handleShare(invoice)} disabled={sharingId === invoice._id} className="text-green-600 hover:text-green-900 disabled:opacity-50 mr-3" title="Share Invoice">
+                          <ShareIcon className="w-5 h-5" />
+                        </button>
                         <button onClick={() => handleDownload(invoice)} disabled={downloadingId === invoice._id} className="text-blue-600 hover:text-blue-900 disabled:opacity-50" title="Download Invoice">
                           <ArrowDownTrayIcon className="w-5 h-5" />
                         </button>
@@ -130,7 +170,10 @@ export default function Home() {
                   <div key={invoice._id} className="bg-white rounded-lg shadow p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h2 className="text-lg font-medium text-gray-900">{invoice.invoiceNo}</h2>
-                      <div className="flex gap-4">
+                      <div className="flex gap-3">
+                        <button onClick={() => handleShare(invoice)} disabled={sharingId === invoice._id} className="text-green-600 hover:text-green-900 disabled:opacity-50" title="Share Invoice">
+                          <ShareIcon className="w-5 h-5" />
+                        </button>
                         <button onClick={() => handleDownload(invoice)} disabled={downloadingId === invoice._id} className="text-blue-600 hover:text-blue-900 disabled:opacity-50" title="Download Invoice">
                           <ArrowDownTrayIcon className="w-5 h-5" />
                         </button>
