@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 interface Client {
   _id: string;
@@ -12,17 +12,20 @@ interface Client {
   addressLines: string[];
 }
 
+const getEmptyClientForm = () => ({
+  companyName: "",
+  gstinUin: "",
+  stateName: "",
+  stateCode: "",
+  addressLines: [""],
+});
+
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    companyName: "",
-    gstinUin: "",
-    stateName: "",
-    stateCode: "",
-    addressLines: [""],
-  });
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [formData, setFormData] = useState(getEmptyClientForm);
 
   const fetchClients = async () => {
     setLoading(true);
@@ -36,6 +39,24 @@ export default function Clients() {
     fetchClients();
   }, []);
 
+  const openAddModal = () => {
+    setEditingClientId(null);
+    setFormData(getEmptyClientForm());
+    setShowModal(true);
+  };
+
+  const openEditModal = (client: Client) => {
+    setEditingClientId(client._id);
+    setFormData({
+      companyName: client.companyName,
+      gstinUin: client.gstinUin,
+      stateName: client.stateName,
+      stateCode: client.stateCode,
+      addressLines: client.addressLines?.length ? client.addressLines : [""],
+    });
+    setShowModal(true);
+  };
+
   const handleAddressChange = (index: number, value: string) => {
     const newAddress = [...formData.addressLines];
     newAddress[index] = value;
@@ -48,19 +69,37 @@ export default function Clients() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = editingClientId ? { ...formData, id: editingClientId } : formData;
     const res = await fetch("/api/clients", {
-      method: "POST",
+      method: editingClientId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
-    
+
     if (res.ok) {
-      const newClient = await res.json();
-      setClients([...clients, newClient]);
+      const savedClient = await res.json();
+      setClients((prev) =>
+        editingClientId
+          ? prev.map((client) => (client._id === editingClientId ? savedClient : client))
+          : [...prev, savedClient]
+      );
     }
-    
+
     setShowModal(false);
-    setFormData({ companyName: "", gstinUin: "", stateName: "", stateCode: "", addressLines: [""] });
+    setEditingClientId(null);
+    setFormData(getEmptyClientForm());
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this client?")) return;
+
+    const res = await fetch(`/api/clients?id=${id}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      setClients((prev) => prev.filter((client) => client._id !== id));
+    }
   };
 
   if (loading) return <div>Loading clients...</div>;
@@ -70,7 +109,7 @@ export default function Clients() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Clients</h1>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openAddModal}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <PlusIcon className="w-5 h-5" /> Add Client
@@ -87,12 +126,13 @@ export default function Clients() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GSTIN/UIN</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {clients.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-gray-500">No clients found. Add one to get started.</td>
+                  <td colSpan={5} className="px-6 py-10 text-center text-gray-500">No clients found. Add one to get started.</td>
                 </tr>
               ) : (
                 clients.map((client) => (
@@ -101,6 +141,16 @@ export default function Clients() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{client.gstinUin || "-"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{client.addressLines?.filter(Boolean).join(", ") || "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openEditModal(client)} className="p-2 text-blue-600 hover:text-blue-800" aria-label={`Edit ${client.companyName}`}>
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(client._id)} className="p-2 text-red-600 hover:text-red-800" aria-label={`Delete ${client.companyName}`}>
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -116,10 +166,22 @@ export default function Clients() {
           <div className="space-y-4">
             {clients.map((client) => (
               <div key={client._id} className="bg-white rounded-lg shadow p-4">
-                <h2 className="text-lg font-medium text-gray-900 mb-2">{client.companyName}</h2>
-                <p className="text-sm text-gray-600">GSTIN/UIN: {client.gstinUin || "-"}</p>
-                <p className="text-sm text-gray-600">State: {client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}</p>
-                <p className="text-sm text-gray-600">Address: {client.addressLines?.filter(Boolean).join(", ") || "-"}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900 mb-2">{client.companyName}</h2>
+                    <p className="text-sm text-gray-600">GSTIN/UIN: {client.gstinUin || "-"}</p>
+                    <p className="text-sm text-gray-600">State: {client.stateName} {client.stateCode ? `(${client.stateCode})` : ""}</p>
+                    <p className="text-sm text-gray-600">Address: {client.addressLines?.filter(Boolean).join(", ") || "-"}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEditModal(client)} className="p-2 text-blue-600 hover:text-blue-800" aria-label={`Edit ${client.companyName}`}>
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDelete(client._id)} className="p-2 text-red-600 hover:text-red-800" aria-label={`Delete ${client.companyName}`}>
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -129,7 +191,7 @@ export default function Clients() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Add New Client</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">{editingClientId ? "Edit Client" : "Add New Client"}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Company Name</label>
@@ -158,7 +220,7 @@ export default function Clients() {
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Client</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">{editingClientId ? "Save Changes" : "Save Client"}</button>
               </div>
             </form>
           </div>
