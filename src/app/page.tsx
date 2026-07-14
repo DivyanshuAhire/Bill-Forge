@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DocumentPlusIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/InvoicePDF";
+import { formatDDMMYYYY } from "@/lib/formatDate";
 
 export default function Home() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -135,7 +136,7 @@ export default function Home() {
                   invoices.map((invoice) => (
                     <tr key={invoice._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{invoice.invoiceNo}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(invoice.dated).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDDMMYYYY(invoice.dated)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.buyer?.companyName || "N/A"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -182,7 +183,7 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">Date: {new Date(invoice.dated).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Date: {formatDDMMYYYY(invoice.dated)}</p>
                     <p className="text-sm text-gray-600">Client: {invoice.buyer?.companyName || "N/A"}</p>
                     <p className="text-sm font-semibold text-gray-800 mt-2">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</p>
                   </div>

@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
+import { formatDDMMYYYY } from "@/lib/formatDate";
 
 // Unified font size for the entire PDF
 const FONT_SIZE = 9;
@@ -50,7 +51,7 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
                 </View>
                 <View style={{ width: "50%" }}>
                   <Text style={styles.smallText}>Dated</Text>
-                  <Text>{new Date(data?.dated || Date.now()).toLocaleDateString()}</Text>
+                  <Text>{formatDDMMYYYY(data?.dated)}</Text>
                 </View>
               </View>
             </View>
