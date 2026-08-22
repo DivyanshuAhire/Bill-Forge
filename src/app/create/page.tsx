@@ -125,28 +125,31 @@ export default function CreateInvoice() {
     });
   };
 
-  const generatePDF = async () => {
-    const blob = await pdf(<InvoicePDF data={invoiceData} settings={settings} />).toBlob();
+  const generatePDF = async (overrideData?: any) => {
+    const data = overrideData || invoiceData;
+    const blob = await pdf(<InvoicePDF data={data} settings={settings} />).toBlob();
     const url = URL.createObjectURL(blob);
     
     // Auto download
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Invoice_${invoiceData.invoiceNo}.pdf`;
+    a.download = `Invoice_${data.invoiceNo}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
+    
     // Auto share on mobile
     if (navigator.share) {
-      const file = new File([blob], `Invoice_${invoiceData.invoiceNo}.pdf`, { type: "application/pdf" });
+      const file = new File([blob], `Invoice_${data.invoiceNo}.pdf`, { type: "application/pdf" });
       try {
-        await navigator.share({ files: [file], title: `Invoice ${invoiceData.invoiceNo}` });
+        await navigator.share({ files: [file], title: `Invoice ${data.invoiceNo}` });
       } catch (err) {
         console.error("Share failed:", err);
       }
     }
   };
+
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,12 +163,16 @@ export default function CreateInvoice() {
         const newClient = await res.json();
         invoiceData.buyerId = newClient._id;
       }
-await fetch("/api/invoices", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(invoiceData)
-});
-    await generatePDF();
+    // Save invoice and capture server response (which includes the final invoiceNo)
+    const saveRes = await fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invoiceData)
+    });
+    const savedInvoice = await saveRes.json();
+    // Ensure the PDF uses the server‑generated invoice number
+    const updatedData = { ...invoiceData, invoiceNo: savedInvoice.invoiceNo || invoiceData.invoiceNo };
+    await generatePDF(updatedData);
     setSaving(false);
     window.location.href = "/";
   };

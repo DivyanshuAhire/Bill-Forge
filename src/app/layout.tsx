@@ -10,8 +10,11 @@ import MobileNav from "@/components/MobileNav";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bill Generator",
-  description: "A simple and professional bill generator.",
+  title: "GoldMines",
+  description: "A simple and professional bill generator for GoldMines.",
+  icons: {
+    icon: "/logo.jpg",
+  },
 };
 
 export const viewport = {
@@ -28,7 +31,7 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
-  let companyName = "Bill Generator";
+  let companyName = "GoldMines";
   let isAuthenticated = false;
 
   if (userId) {

@@ -37,10 +37,15 @@ export async function POST(req: NextRequest) {
     if (!invoiceNo) {
       await connectToDatabase();
       const user = await User.findById(userId);
-      const prefix = user?.invoicePrefix || "INV-";
+      const prefix = user?.invoicePrefix || "GM"; // Company prefix
       const count = await Invoice.countDocuments({ userId });
       const paddedNumber = String(count + 1).padStart(3, '0');
-      invoiceNo = `${prefix}${paddedNumber}`;
+      const now = new Date();
+      const year = now.getFullYear();
+      const yearShort = (year % 100).toString().padStart(2, '0');
+      const nextYearShort = ((year + 1) % 100).toString().padStart(2, '0');
+      const yearRange = `${yearShort}-${nextYearShort}`;
+      invoiceNo = `${prefix}/${yearRange}/${paddedNumber}`;
     }
 
     await connectToDatabase();
