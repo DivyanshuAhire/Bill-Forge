@@ -8,7 +8,8 @@ import {
   ArchiveBoxIcon, 
   Cog6ToothIcon, 
   DocumentPlusIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ChartBarIcon
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ companyName }: { companyName: string }) {
@@ -19,6 +20,7 @@ export default function Sidebar({ companyName }: { companyName: string }) {
     { name: "Create Invoice", href: "/create", icon: DocumentPlusIcon },
     { name: "Products", href: "/products", icon: ArchiveBoxIcon },
     { name: "Clients", href: "/clients", icon: UsersIcon },
+    { name: "Summary", href: "/summary", icon: ChartBarIcon },
     { name: "Settings", href: "/settings", icon: Cog6ToothIcon },
   ];
 

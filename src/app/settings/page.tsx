@@ -225,6 +225,56 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Google Apps Script Integration */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">Google Apps Script (Summary Data)</h2>
+          <p className="text-sm text-gray-500">
+            Paste the Web App URL from your deployed Google Apps Script below. This is used to fetch financial summary data (Total Buying, Selling, Profit, Received, Paid) from your Google Sheet.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Apps Script Web App URL</label>
+            <input
+              type="url"
+              name="googleAppsScriptUrl"
+              value={formData.googleAppsScriptUrl || ""}
+              onChange={handleChange}
+              placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white text-gray-900"
+            />
+          </div>
+
+          {/* Collapsible script template */}
+          <details className="bg-gray-50 border border-gray-200 rounded-lg">
+            <summary className="px-4 py-3 cursor-pointer text-sm font-medium text-blue-700 hover:text-blue-900 select-none">
+              📋 How to set up — Apps Script template
+            </summary>
+            <div className="px-4 pb-4 text-xs text-gray-600 space-y-2">
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Open your Google Sheet → <strong>Extensions → Apps Script</strong></li>
+                <li>Delete any existing code and paste the script below</li>
+                <li>Change the cell references (e.g. <code>B2</code>, <code>B3</code>) to match your sheet</li>
+                <li>Click <strong>Deploy → New deployment → Web app</strong></li>
+                <li>Set &quot;Who has access&quot; to <strong>Anyone</strong></li>
+                <li>Copy the URL and paste it above</li>
+              </ol>
+              <pre className="mt-3 p-3 bg-gray-900 text-green-300 rounded-md overflow-x-auto text-xs whitespace-pre">{`function doGet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Bills Summary");
+  var data = {
+    totalBuying:   sheet.getRange("B2").getValue(),
+    totalSelling:  sheet.getRange("B3").getValue(),
+    totalProfit:   sheet.getRange("B4").getValue(),
+    totalReceived: sheet.getRange("B5").getValue(),
+    totalPaid:     sheet.getRange("B6").getValue()
+  };
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}`}</pre>
+            </div>
+          </details>
+        </div>
+
         <div className="pt-4 flex justify-end">
           <button type="submit" disabled={saving} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
             {saving ? "Saving..." : "Save Settings"}

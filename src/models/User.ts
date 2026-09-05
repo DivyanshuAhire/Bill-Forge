@@ -14,6 +14,7 @@ export interface IUser extends Document {
   stateCode?: string;
   email?: string;
   templateName?: string; // PDF template selection
+  googleAppsScriptUrl?: string; // Google Apps Script Web App URL for summary data
   bankDetails?: {
     bankName?: string;
     accountNo?: string;
@@ -45,6 +46,7 @@ const UserSchema: Schema = new Schema(
     stateCode: { type: String },
     email: { type: String },
     templateName: { type: String, default: "default" },
+    googleAppsScriptUrl: { type: String },
     bankDetails: {
       bankName: { type: String },
       accountNo: { type: String },

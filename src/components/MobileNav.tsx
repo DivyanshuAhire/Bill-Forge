@@ -10,6 +10,7 @@ import {
   ArchiveBoxIcon,
   UsersIcon,
   Cog6ToothIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 export default function MobileNav() {
@@ -17,10 +18,10 @@ export default function MobileNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navItems = [
     { name: "Invoices", href: "/", icon: HomeIcon },
-    { name: "Create Invoice", href: "/create", icon: DocumentPlusIcon },
+    { name: "Create", href: "/create", icon: DocumentPlusIcon },
     { name: "Products", href: "/products", icon: ArchiveBoxIcon },
     { name: "Clients", href: "/clients", icon: UsersIcon },
-    { name: "Settings", href: "/settings", icon: Cog6ToothIcon },
+    { name: "Summary", href: "/summary", icon: ChartBarIcon },
   ];
   return (
     <>
