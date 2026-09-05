@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const invoices = await Invoice.find({ userId }).sort({ dated: -1 });
+    const invoices = await Invoice.find({ userId }).sort({ createdAt: -1, dated: -1 });
 
     return NextResponse.json(invoices);
   } catch (error: any) {

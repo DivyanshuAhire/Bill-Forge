@@ -1,11 +1,9 @@
 import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
 import { formatDDMMYYYY } from "@/lib/formatDate";
+import { formatIndianNumber, formatIndianCurrency } from "@/lib/formatIndian";
 
 // Unified font size for the entire PDF
 const FONT_SIZE = 9;
-
-// Helper for generic number formatting
-const formatAmount = (amount: number) => `Rs ${amount.toFixed(2)}`;
 
 const styles = StyleSheet.create({
   page: { padding: 30, fontSize: FONT_SIZE, fontFamily: "Helvetica", color: "#000" },
@@ -126,9 +124,9 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
               <Text style={styles.tableColDesc}>{item.description}</Text>
               <Text style={styles.tableColSmall}>{item.hsnSac}</Text>
               <Text style={styles.tableColSmall}>{item.quantity}</Text>
-              <Text style={styles.tableColRate}>{item.rate?.toFixed(2)}</Text>
+              <Text style={styles.tableColRate}>{formatIndianNumber(item.rate ?? 0)}</Text>
               <Text style={styles.tableColPer}>{item.unit}</Text>
-              <Text style={styles.tableColAmount}>{item.amount?.toFixed(2)}</Text>
+              <Text style={[styles.tableColAmount, styles.boldText]}>{formatIndianNumber(item.amount ?? 0)}</Text>
             </View>
           ))}
 
@@ -148,18 +146,18 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
           <View style={styles.tableRow}>
             <Text style={[styles.tableColDesc, { textAlign: 'right', width: "73%" }]}><Text>CGST</Text></Text>
             <Text style={styles.tableColPer}>{data?.totals?.totalTax ? " " : ""}</Text>
-            <Text style={styles.tableColAmount}>{data?.totals?.cgstTotal?.toFixed(2)}</Text>
+            <Text style={[styles.tableColAmount, styles.boldText]}>{formatIndianNumber(data?.totals?.cgstTotal ?? 0)}</Text>
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableColDesc, { textAlign: 'right', width: "73%" }]}><Text>SGST</Text></Text>
             <Text style={styles.tableColPer}>{data?.totals?.totalTax ? " " : ""}</Text>
-            <Text style={styles.tableColAmount}>{data?.totals?.sgstTotal?.toFixed(2)}</Text>
+            <Text style={[styles.tableColAmount, styles.boldText]}>{formatIndianNumber(data?.totals?.sgstTotal ?? 0)}</Text>
           </View>
 
           {/* Round Off */}
           <View style={styles.tableRow}>
             <Text style={[styles.tableColDesc, { textAlign: 'right', width: "81%" }]}><Text>Round Off</Text></Text>
-            <Text style={styles.tableColAmount}>{data?.totals?.roundOff?.toFixed(2)}</Text>
+            <Text style={[styles.tableColAmount, styles.boldText]}>{formatIndianNumber(data?.totals?.roundOff ?? 0)}</Text>
           </View>
 
           {/* Total */}
@@ -167,14 +165,14 @@ export const InvoicePDF = ({ data, settings }: { data: any; settings: any }) => 
             <Text style={[styles.tableColDesc, { textAlign: 'right', width: "48%" }]}><Text>Total</Text></Text>
             <Text style={styles.tableColSmall}>{data?.totals?.totalQuantity}</Text>
             <Text style={{ width: "20%" }}></Text>
-            <Text style={styles.tableColAmount}>{formatAmount(data?.totals?.grandTotal || 0)}</Text>
+            <Text style={[styles.tableColAmount, styles.boldText]}>{formatIndianCurrency(data?.totals?.grandTotal || 0)}</Text>
           </View>
         </View>
 
         <View style={[styles.borderBox, { marginTop: 10 }]}>
           <View style={{ padding: 5, borderBottomWidth: 1, borderBottomColor: "#000" }}>
             <Text style={styles.smallText}>Amount Chargeable (in words)</Text>
-            <Text>INR {data?.totals?.amountInWords} Only</Text>
+            <Text style={styles.boldText}>INR {data?.totals?.amountInWords} Only</Text>
           </View>
           
           <View style={[styles.row]}>

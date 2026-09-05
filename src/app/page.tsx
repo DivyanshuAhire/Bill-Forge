@@ -6,6 +6,7 @@ import { DocumentPlusIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, ShareIcon
 import { pdf } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatDDMMYYYY } from "@/lib/formatDate";
+import { formatIndianNumber } from "@/lib/formatIndian";
 
 export default function Home() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -138,7 +139,7 @@ export default function Home() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{invoice.invoiceNo}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDDMMYYYY(invoice.dated)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.buyer?.companyName || "N/A"}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">₹{formatIndianNumber(invoice.totals?.grandTotal ?? 0)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onClick={() => handleShare(invoice)} disabled={sharingId === invoice._id} className="text-green-600 hover:text-green-900 disabled:opacity-50 mr-3" title="Share Invoice">
                           <ShareIcon className="w-5 h-5" />
@@ -185,7 +186,7 @@ export default function Home() {
                     </div>
                     <p className="text-sm text-gray-600">Date: {formatDDMMYYYY(invoice.dated)}</p>
                     <p className="text-sm text-gray-600">Client: {invoice.buyer?.companyName || "N/A"}</p>
-                    <p className="text-sm font-semibold text-gray-800 mt-2">₹{invoice.totals?.grandTotal?.toFixed(2) || "0.00"}</p>
+                    <p className="text-sm font-semibold text-gray-800 mt-2">₹{formatIndianNumber(invoice.totals?.grandTotal ?? 0)}</p>
                   </div>
                 ))}
               </div>

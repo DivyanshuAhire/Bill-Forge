@@ -6,7 +6,7 @@ import { InvoicePDF } from "@/components/InvoicePDF";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import styles from "./page.module.css";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
-import * as converter from "number-to-words";
+import { formatIndianNumber, indianNumberToWords } from "@/lib/formatIndian";
 
 export default function CreateInvoice() {
   const [settings, setSettings] = useState<any>({});
@@ -115,7 +115,7 @@ export default function CreateInvoice() {
     
     let amountInWords = "";
     try {
-      amountInWords = converter.toWords(grandTotal).replace(/-/g, " ").toUpperCase();
+      amountInWords = indianNumberToWords(grandTotal).toUpperCase();
     } catch (e) {}
 
     setInvoiceData({
@@ -290,7 +290,7 @@ export default function CreateInvoice() {
                       <input type="number" step="0.1" value={item.sgstRate} onChange={(e) => updateLineItem(index, "sgstRate", e.target.value)} className="block w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 text-sm" />
                     </td>
                     <td className="px-3 py-2 text-right text-sm text-gray-900 font-medium" data-label="Amount">
-                      ₹{item.amount.toFixed(2)}
+                      ₹{formatIndianNumber(item.amount)}
                     </td>
                     <td className="px-3 py-2 text-right" data-label="Actions">
                       <button type="button" onClick={() => removeLineItem(index)} className="text-red-600 hover:text-red-800"><TrashIcon className="w-5 h-5" /></button>
@@ -307,23 +307,23 @@ export default function CreateInvoice() {
           <div className="w-72 bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Subtotal:</span>
-              <span>₹{invoiceData.totals.subtotal.toFixed(2)}</span>
+              <span>₹{formatIndianNumber(invoiceData.totals.subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>CGST:</span>
-              <span>₹{invoiceData.totals.cgstTotal.toFixed(2)}</span>
+              <span>₹{formatIndianNumber(invoiceData.totals.cgstTotal)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>SGST:</span>
-              <span>₹{invoiceData.totals.sgstTotal.toFixed(2)}</span>
+              <span>₹{formatIndianNumber(invoiceData.totals.sgstTotal)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>Round Off:</span>
-              <span>₹{invoiceData.totals.roundOff.toFixed(2)}</span>
+              <span>₹{formatIndianNumber(invoiceData.totals.roundOff)}</span>
             </div>
             <div className="pt-2 border-t border-gray-200 flex justify-between font-bold text-lg text-gray-900">
               <span>Grand Total:</span>
-              <span>₹{invoiceData.totals.grandTotal.toFixed(2)}</span>
+              <span>₹{formatIndianNumber(invoiceData.totals.grandTotal)}</span>
             </div>
           </div>
         </div>
