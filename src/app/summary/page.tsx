@@ -9,7 +9,8 @@ import {
   CheckCircleIcon, 
   BanknotesIcon,
   ClockIcon,
-  WalletIcon
+  WalletIcon,
+  BuildingLibraryIcon
 } from "@heroicons/react/24/outline";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
@@ -20,6 +21,7 @@ interface SummaryData {
   totalProfit: number | null;
   totalReceived: number | null;
   totalPaid: number | null;
+  bankBalance: number | null;
 }
 
 interface ProductRow {
@@ -177,17 +179,31 @@ export default function SummaryPage() {
       {/* ── KPI Cards ───────────────────────────────────────────────── */}
       {data && (
         <>
-          {/* Total Profit - Top Level */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center hover:shadow-md transition-shadow mb-6">
-            <div className="flex justify-center items-center gap-2 mb-2">
-              <ArrowTrendingUpIcon className="h-6 w-6 text-green-500" />
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Profit</h2>
+          {/* Top Level Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center hover:shadow-md transition-shadow">
+              <div className="flex justify-center items-center gap-2 mb-2">
+                <ArrowTrendingUpIcon className="h-6 w-6 text-green-500" />
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Profit</h2>
+              </div>
+              <p className="text-5xl font-extrabold text-green-600 tracking-tight">
+                {data.totalProfit !== null && data.totalProfit !== undefined
+                  ? `₹${formatIndianNumber(data.totalProfit)}`
+                  : "—"}
+              </p>
             </div>
-            <p className="text-5xl font-extrabold text-green-600 tracking-tight">
-              {data.totalProfit !== null && data.totalProfit !== undefined
-                ? `₹${formatIndianNumber(data.totalProfit)}`
-                : "—"}
-            </p>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center hover:shadow-md transition-shadow">
+              <div className="flex justify-center items-center gap-2 mb-2">
+                <BuildingLibraryIcon className="h-6 w-6 text-blue-500" />
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bank Balance</h2>
+              </div>
+              <p className="text-5xl font-extrabold text-blue-600 tracking-tight">
+                {data.bankBalance !== null && data.bankBalance !== undefined
+                  ? `₹${formatIndianNumber(data.bankBalance)}`
+                  : "—"}
+              </p>
+            </div>
           </div>
 
           {/* Buying Row */}

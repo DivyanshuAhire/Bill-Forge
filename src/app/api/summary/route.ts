@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await res.json();
+    console.log("Data from Apps Script:", data);
 
     // Normalise values to numbers
     const parse = (v: unknown): number | null => {
@@ -53,6 +54,7 @@ export async function GET(req: NextRequest) {
       totalProfit: parse(data.totalProfit),
       totalReceived: parse(data.totalReceived),
       totalPaid: parse(data.totalPaid),
+      bankBalance: parse(data.bankBalance),
     });
   } catch (error: unknown) {
     console.error("Summary API error:", error);

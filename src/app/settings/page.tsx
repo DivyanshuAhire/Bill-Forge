@@ -265,7 +265,8 @@ export default function Settings() {
     totalSelling:  sheet.getRange("B3").getValue(),
     totalProfit:   sheet.getRange("B4").getValue(),
     totalReceived: sheet.getRange("B5").getValue(),
-    totalPaid:     sheet.getRange("B6").getValue()
+    totalPaid:     sheet.getRange("B6").getValue(),
+    bankBalance:   sheet.getRange("B7").getValue()
   };
   return ContentService
     .createTextOutput(JSON.stringify(data))
